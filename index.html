@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Painel de Controle AGV</title>
+    <link rel="stylesheet" href="style.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <header>
+      <h1>Painel de Controle e Monitoramento - AGV 01</h1>
+    </header>
+    <main class="dashboard-container">
+      <section class="map-section">
+        <h2>Mapa do Percurso do Galpão</h2>
+        <div class="map-container">
+          <svg id="map-svg" width="100%" height="100%"></svg>
+
+          <div class="zone" id="recharge-station">Estação de Recarga</div>
+          <div class="zone" id="dock-a">Ponto de Carga A</div>
+          <div class="zone" id="crossroads">Encruzilhada</div>
+          <div class="zone" id="corridor-1">Corredor 1</div>
+          <div class="zone" id="corridor-2">Corredor 2</div>
+          <div class="zone" id="delivery-b">Ponto de Entrega B</div>
+
+          <div id="agv" class="agv-marker">
+            <div class="agv-icon"></div>
+            <span class="agv-label">AGV-01</span>
+          </div>
+        </div>
+      </section>
+
+      <aside class="info-section">
+        <div class="info-card">
+          <h3>Status do Sistema</h3>
+          <p id="agv-status" class="status-online">Online</p>
+        </div>
+        <div class="info-card">
+          <h3>Nível da Bateria</h3>
+          <div class="battery-container">
+            <div id="battery-level" class="battery-level-bar"></div>
+          </div>
+          <p id="battery-percentage" class="percentage-text">100%</p>
+        </div>
+        <div class="info-card">
+          <h3>Carga Atual (RFID)</h3>
+          <p id="rfid-data">Nenhuma</p>
+        </div>
+        <div class="info-card">
+          <h3>Controles</h3>
+          <div class="controls-container">
+            <button id="btn-start-pause" class="btn btn-primary">
+              Iniciar Tarefa
+            </button>
+            <button id="btn-return" class="btn btn-secondary">
+              Retornar à Base
+            </button>
+            <button id="btn-emergency-stop" class="btn btn-danger">
+              PARADA DE EMERGÊNCIA
+            </button>
+          </div>
+        </div>
+      </aside>
+    </main>
+
+    <script src="script.js"></script>
+  </body>
+</html>

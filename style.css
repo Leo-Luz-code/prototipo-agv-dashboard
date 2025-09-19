@@ -1,0 +1,239 @@
+:root {
+  --bg-color: #1a1c20;
+  --card-color: #25282e;
+  --border-color: #3e4249;
+  --text-color: #e0e0e0;
+  --text-muted-color: #8c929c;
+  --primary-color: #007bff;
+  --success-color: #28a745;
+  --warning-color: #ffc107;
+  --danger-color: #dc3545;
+  --agv-color: #36d1dc;
+  --path-color: #4a4f58;
+  --path-animation-color: var(--success-color);
+}
+
+body {
+  font-family: "Roboto", sans-serif;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  margin: 0;
+  padding: 0;
+}
+
+header {
+  background-color: var(--card-color);
+  padding: 1rem 2rem;
+  border-bottom: 2px solid var(--border-color);
+  text-align: center;
+}
+
+.dashboard-container {
+  display: flex;
+  flex-wrap: wrap;
+  padding: 2rem;
+  gap: 2rem;
+}
+
+.map-section {
+  flex: 3;
+  min-width: 600px;
+}
+
+.info-section {
+  flex: 1;
+  min-width: 300px;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+h2,
+h3 {
+  color: var(--text-color);
+  font-weight: 700;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 0.5rem;
+  margin-top: 0;
+}
+
+.map-container {
+  background-color: var(--card-color);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  height: 600px;
+  position: relative;
+  padding: 1rem;
+  overflow: hidden;
+}
+
+#map-svg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 1;
+}
+
+.path-line {
+  stroke: var(--path-color);
+  stroke-width: 4;
+  stroke-linecap: round;
+}
+
+.path-pulse {
+  fill: var(--path-animation-color);
+  visibility: hidden; /* Escondida por padrão */
+}
+
+/* Classe que ativa a animação */
+.path-pulse.animate {
+  visibility: visible;
+  /* A propriedade offset-path será definida via JS */
+  animation: pulse-animation 0.5s linear infinite;
+}
+
+@keyframes pulse-animation {
+  from {
+    offset-distance: 0%;
+  }
+  to {
+    offset-distance: 100%;
+  }
+}
+
+.zone {
+  position: absolute;
+  background-color: rgba(40, 42, 48, 0.8);
+  border: 1px solid var(--border-color);
+  border-radius: 5px;
+  padding: 0.5rem;
+  color: var(--text-muted-color);
+  font-size: 0.9em;
+  transform: translate(-50%, -50%);
+  z-index: 2;
+}
+
+.agv-marker {
+  position: absolute;
+  width: 60px;
+  height: 60px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transform: translate(-50%, -50%);
+  z-index: 3;
+  transition: left 1s ease-in-out, top 1s ease-in-out; /* Transição suave */
+}
+
+.agv-icon {
+  width: 24px;
+  height: 24px;
+  background-color: var(--agv-color);
+  border: 2px solid white;
+  border-radius: 50%;
+  box-shadow: 0 0 15px var(--agv-color);
+}
+
+.agv-label {
+  font-size: 0.8rem;
+  font-weight: bold;
+  color: white;
+  margin-top: 5px;
+}
+
+.info-card {
+  background-color: var(--card-color);
+  padding: 1.5rem;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+}
+
+.info-card p {
+  font-size: 1.2rem;
+  font-weight: 300;
+  margin: 0.5rem 0 0;
+}
+#agv-status {
+  font-weight: 700;
+  font-size: 1.5rem;
+}
+.status-online {
+  color: var(--success-color);
+}
+.status-moving {
+  color: var(--primary-color);
+}
+.status-charging {
+  color: var(--warning-color);
+}
+.status-error {
+  color: var(--danger-color);
+}
+
+.battery-container {
+  width: 100%;
+  height: 30px;
+  background-color: #333;
+  border-radius: 5px;
+  border: 1px solid var(--border-color);
+  overflow: hidden;
+}
+.battery-level-bar {
+  height: 100%;
+  width: 100%;
+  background-color: var(--success-color);
+  border-radius: 5px;
+  transition: width 0.5s ease-in-out, background-color 0.5s ease-in-out;
+}
+.percentage-text {
+  text-align: center;
+  font-weight: 700;
+  font-size: 1rem;
+  margin-top: 0.5rem;
+}
+#rfid-data {
+  font-family: monospace;
+  color: var(--warning-color);
+  font-size: 1.1rem;
+}
+
+.controls-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+.btn {
+  padding: 0.8rem 1rem;
+  border: none;
+  border-radius: 5px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.1s ease;
+}
+.btn:active {
+  transform: scale(0.98);
+}
+.btn-primary {
+  background-color: var(--primary-color);
+  color: white;
+}
+.btn-primary:hover {
+  background-color: #0069d9;
+}
+.btn-secondary {
+  background-color: #6c757d;
+  color: white;
+}
+.btn-secondary:hover {
+  background-color: #5a6268;
+}
+.btn-danger {
+  background-color: var(--danger-color);
+  color: white;
+  font-size: 1.1rem;
+}
+.btn-danger:hover {
+  background-color: #c82333;
+}
