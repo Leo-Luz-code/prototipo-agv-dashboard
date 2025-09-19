@@ -83,21 +83,43 @@ h3 {
 .path-pulse {
   fill: var(--path-animation-color);
   visibility: hidden; /* Escondida por padrão */
+  transform-box: fill-box;
+  transform-origin: center;
+  /* ADICIONADO: Garante que o centro do círculo siga o offset-path */
+  offset-anchor: center;
+  /* ADICIONADO: Define o modo de preenchimento para que a animação não resete imediatamente */
+  animation-fill-mode: forwards;
 }
 
 /* Classe que ativa a animação */
 .path-pulse.animate {
   visibility: visible;
-  /* A propriedade offset-path será definida via JS */
-  animation: pulse-animation 0.5s linear infinite;
+  /* ATUALIZADO: Usamos "forwards" para manter o estado final ao invés de resetar */
+  /* Removemos o "infinite" daqui, ele será controlado pelo JS */
+  animation: move-and-pulse 2s ease-out forwards; /* Ajuste o tempo conforme desejar */
 }
 
-@keyframes pulse-animation {
-  from {
+@keyframes move-and-pulse {
+  0% {
     offset-distance: 0%;
+    transform: scale(0.8);
+    opacity: 0;
   }
-  to {
+  10% {
+    /* Começa a pulsar e aparecer logo no início */
+    transform: scale(1.5);
+    opacity: 1;
+  }
+  90% {
+    /* Mantém o pulso e visibilidade na maior parte do caminho */
+    transform: scale(1.5);
+    opacity: 1;
+  }
+  100% {
     offset-distance: 100%;
+    /* No final, ela "termina" seu pulso e desaparece */
+    transform: scale(0.8);
+    opacity: 0;
   }
 }
 

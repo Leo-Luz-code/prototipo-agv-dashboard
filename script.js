@@ -188,27 +188,20 @@ document.addEventListener("DOMContentLoaded", () => {
   // --- LÓGICA PRINCIPAL DA SIMULAÇÃO ---
 
   function simulationTick() {
-    // 1. Define o ponto de destino para esta atualização
     const destinationStep = simulatedRoute[routeIndex];
     const destinationPoint = locations[destinationStep.point];
 
-    // 2. Move o marcador do AGV para o ponto de destino
     agvElement.style.left = `${destinationPoint.x}%`;
     agvElement.style.top = `${destinationPoint.y}%`;
 
-    // 3. Atualiza os painéis de informação (status, bateria, etc.)
     updateDashboard(destinationStep);
 
-    // 4. Para todas as animações de linha existentes
-    stopAllPulseAnimations();
+    stopAllPulseAnimations(); // Desativa as animações de todas as bolinhas
 
-    // 5. Inicia a animação na PRÓXIMA linha do percurso
     const currentPointName = destinationStep.point;
     const nextIndex = (routeIndex + 1) % simulatedRoute.length;
     const nextPointName = simulatedRoute[nextIndex].point;
 
-    // Encontra o segmento de caminho correspondente para animar
-    // Tenta encontrar nos dois sentidos (ex: A->B ou B->A)
     let segmentKey = `${currentPointName}_${nextPointName}`;
     let reverseSegmentKey = `${nextPointName}_${currentPointName}`;
 
@@ -216,10 +209,14 @@ document.addEventListener("DOMContentLoaded", () => {
       pathSegments[segmentKey] || pathSegments[reverseSegmentKey];
 
     if (segmentToAnimate) {
+      // Força o navegador a reiniciar a animação removendo e adicionando a classe
+      // Isso é crucial para que a animação "teletransporte" para o início da nova rota
+      segmentToAnimate.pulseEl.classList.remove("animate");
+      // Força um reflow (repaint) para que a remoção da classe seja processada
+      void segmentToAnimate.pulseEl.offsetWidth;
       segmentToAnimate.pulseEl.classList.add("animate");
     }
 
-    // 6. Prepara o índice para a próxima atualização
     routeIndex = (routeIndex + 1) % simulatedRoute.length;
   }
 
