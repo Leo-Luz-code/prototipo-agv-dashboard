@@ -1,4 +1,4 @@
-import { on, subscribe, publish } from "../config/mqttConfig";
+import { on, publish, subscribe } from "../config/mqttConfig";
 import { updateStatus } from "../services/agvService";
 
 on("connect", () => {
