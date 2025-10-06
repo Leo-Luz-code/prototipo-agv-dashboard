@@ -9,6 +9,6 @@ export function updateStatus(novoStatus) {
   agvStatus = { ...agvStatus, ...novoStatus, ultimaAtualizacao: new Date() };
 }
 
-export function getStatus() {
+export function getStatusFromAGV() {
   return agvStatus;
 }

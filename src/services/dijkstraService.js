@@ -1,4 +1,4 @@
-import { grafo } from "../models/mapModel";
+import { grafo } from "../models/mapModel.js";
 
 // Exemplo simples de Dijkstra (pode ser expandido)
 export function calcularRota(inicio, destino) {

@@ -1,16 +1,18 @@
-import { on, publish, subscribe } from "../config/mqttConfig";
-import { updateStatus } from "../services/agvService";
+import client from "../config/mqttConfig.js";
+import { updateStatus } from "../services/agvService.js";
 
-on("connect", () => {
-  subscribe("agv/status", (err) => {
+client.on("connect", () => {
+  client.subscribe("agv/status", (err) => {
     if (!err) console.log("[MQTT] Inscrito em agv/status");
   });
 });
 
-on("message", (topic, message) => {
+client.on("message", (topic, message) => {
   if (topic === "agv/status") {
+    const raw = message.toString();
+
     try {
-      const data = JSON.parse(message.toString());
+      const data = JSON.parse(raw);
       updateStatus(data);
       console.log("[MQTT] Status recebido:", data);
     } catch (e) {
@@ -20,6 +22,6 @@ on("message", (topic, message) => {
 });
 
 export function publicarComandos(comandos) {
-  publish("agv/commands", JSON.stringify(comandos));
+  client.publish("agv/commands", JSON.stringify(comandos));
   console.log("[MQTT] Comandos enviados:", comandos);
 }

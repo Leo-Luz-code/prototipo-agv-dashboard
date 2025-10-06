@@ -1,5 +1,5 @@
-import { getStatus } from "../services/agvService";
+import { getStatusFromAGV } from "../services/agvService.js";
 
 export function getStatus(req, res) {
-  res.json(getStatus());
+  res.json(getStatusFromAGV());
 }

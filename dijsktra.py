@@ -23,16 +23,16 @@ grafo = {
     'Amarelo': {'Laranja': 1, 'Verde': 1, 'Lilás': 1},
     'Ciano': {'Vermelho': 1, 'Azul-acinzentado': 1},
     'Azul-acinzentado': {'Ciano': 1, 'Laranja': 1, 'Lilás': 1},
-    'Lilás': {'Amarelo': 1, 'Azul-acinzentado': 1, 'Roxo': 50, 'Branco': 1},
+    'Lilás': {'Amarelo': 1, 'Azul-acinzentado': 1, 'Roxo': 1, 'Branco': 1},
     'Verde': {'Amarelo': 1, 'Azul': 1},
     'Azul': {'Verde': 1, 'Azul-escuro': 1},
     'Azul-escuro': {'Azul': 1, 'Roxo': 1},
-    'Roxo': {'Azul-escuro': 1, 'Lilás': 50},
+    'Roxo': {'Azul-escuro': 1, 'Lilás': 1},
     'Branco': {'Lilás': 1}
 }
 
 # Caminho mais curto
-custo, caminho = dijkstra(grafo, 'Branco', 'Roxo')
+custo, caminho = dijkstra(grafo, 'Branco', 'Azul')
 print(f"Custo: {custo}, Caminho: {caminho}")
 
 # Dicionário de direções pré-definidas
@@ -50,7 +50,7 @@ acoes = {
     ('Amarelo', 'Lilás', 'Branco'): 'reto',
     ('Roxo', 'Lilás', 'Azul-acinzentado'): 'reto',
     ('Roxo', 'Lilás', 'Amarelo'): 'direita',
-    ('Roxo', 'Lilás', 'Branco'): 'esquerda', # Relativo ao caminho Roxo->Lilás
+    ('Roxo', 'Lilás', 'Branco'): 'esquerda',
     ('Azul-acinzentado', 'Lilás', 'Roxo'): 'reto',
     ('Azul-acinzentado', 'Lilás', 'Amarelo'): 'esquerda',
     ('Azul-acinzentado', 'Lilás', 'Branco'): 'direita',

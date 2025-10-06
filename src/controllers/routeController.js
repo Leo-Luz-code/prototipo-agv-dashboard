@@ -1,5 +1,5 @@
-import { calcularRota } from "../services/dijkstraService";
-import { publicarComandos } from "./mqttController";
+import { calcularRota } from "../services/dijkstraService.js";
+import { publicarComandos } from "./mqttController.js";
 
 export function generateRoute(req, res) {
   const { inicio, destino } = req.body;

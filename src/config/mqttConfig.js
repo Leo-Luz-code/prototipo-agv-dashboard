@@ -7,7 +7,7 @@ const mqttOptions = {
 
 const client = connect(`mqtt://${mqttOptions.host}:${mqttOptions.port}`);
 
-client.on("connect", () => {
+client.on("connect", (err) => {
   console.log("[MQTT] Conectado ao broker");
 });
 
