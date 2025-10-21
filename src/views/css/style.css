@@ -85,18 +85,13 @@ h3 {
   visibility: hidden; /* Escondida por padrão */
   transform-box: fill-box;
   transform-origin: center;
-  /* ADICIONADO: Garante que o centro do círculo siga o offset-path */
   offset-anchor: center;
-  /* ADICIONADO: Define o modo de preenchimento para que a animação não resete imediatamente */
   animation-fill-mode: forwards;
 }
 
-/* Classe que ativa a animação */
 .path-pulse.animate {
   visibility: visible;
-  /* ATUALIZADO: Usamos "forwards" para manter o estado final ao invés de resetar */
-  /* Removemos o "infinite" daqui, ele será controlado pelo JS */
-  animation: move-and-pulse 2s ease-out forwards; /* Ajuste o tempo conforme desejar */
+  animation: move-and-pulse 2s ease-out forwards;
 }
 
 @keyframes move-and-pulse {
@@ -106,18 +101,15 @@ h3 {
     opacity: 0;
   }
   10% {
-    /* Começa a pulsar e aparecer logo no início */
     transform: scale(1.5);
     opacity: 1;
   }
   90% {
-    /* Mantém o pulso e visibilidade na maior parte do caminho */
     transform: scale(1.5);
     opacity: 1;
   }
   100% {
     offset-distance: 100%;
-    /* No final, ela "termina" seu pulso e desaparece */
     transform: scale(0.8);
     opacity: 0;
   }
@@ -145,7 +137,14 @@ h3 {
   justify-content: center;
   transform: translate(-50%, -50%);
   z-index: 3;
-  transition: left 1s ease-in-out, top 1s ease-in-out; /* Transição suave */
+  /* ATUALIZADO: A transição de 1s foi movida para a animação */
+  /* Isso permite que o 'teleporte' inicial seja instantâneo */
+  transition: left 1s ease-in-out, top 1s ease-in-out;
+}
+
+/* Classe para teleporte (sem animação) */
+.agv-marker.no-transition {
+  transition: none;
 }
 
 .agv-icon {
@@ -234,6 +233,10 @@ h3 {
   cursor: pointer;
   transition: background-color 0.3s ease, transform 0.1s ease;
 }
+.btn:disabled {
+  background-color: var(--text-muted-color);
+  cursor: not-allowed;
+}
 .btn:active {
   transform: scale(0.98);
 }
@@ -258,4 +261,30 @@ h3 {
 }
 .btn-danger:hover {
   background-color: #c82333;
+}
+
+/* NOVOS ESTILOS PARA SELEÇÃO DE ROTA */
+.route-selection {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+.route-selection label {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text-muted-color);
+}
+.select-route {
+  width: 100%;
+  padding: 0.5rem;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+  border-radius: 5px;
+  font-size: 1rem;
+}
+.select-route:disabled {
+  background-color: #333;
+  cursor: not-allowed;
 }

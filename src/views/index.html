@@ -18,16 +18,21 @@
     </header>
     <main class="dashboard-container">
       <section class="map-section">
-        <h2>Mapa do Percurso do Galpão</h2>
+        <h2>Mapa do Percurso (Grafo 11 Nós)</h2>
         <div class="map-container">
           <svg id="map-svg" width="100%" height="100%"></svg>
 
-          <div class="zone" id="recharge-station">Estação de Recarga</div>
-          <div class="zone" id="dock-a">Ponto de Carga A</div>
-          <div class="zone" id="crossroads">Encruzilhada</div>
-          <div class="zone" id="corridor-1">Corredor 1</div>
-          <div class="zone" id="corridor-2">Corredor 2</div>
-          <div class="zone" id="delivery-b">Ponto de Entrega B</div>
+          <div class="zone" id="Branco">Ponto Branco</div>
+          <div class="zone" id="Ciano">Ponto Ciano</div>
+          <div class="zone" id="Azul-acinzentado">Ponto Azul-acinzentado</div>
+          <div class="zone" id="Lilás">Ponto Lilás</div>
+          <div class="zone" id="Roxo">Ponto Roxo</div>
+          <div class="zone" id="Azul-escuro">Ponto Azul-escuro</div>
+          <div class="zone" id="Vermelho">Ponto Vermelho</div>
+          <div class="zone" id="Laranja">Ponto Laranja</div>
+          <div class="zone" id="Amarelo">Ponto Amarelo</div>
+          <div class="zone" id="Verde">Ponto Verde</div>
+          <div class="zone" id="Azul">Ponto Azul</div>
 
           <div id="agv" class="agv-marker">
             <div class="agv-icon"></div>
@@ -54,9 +59,16 @@
         </div>
         <div class="info-card">
           <h3>Controles</h3>
+
+          <div class="route-selection">
+            <label for="select-inicio">Ponto de Início:</label>
+            <select id="select-inicio" class="select-route"></select>
+            <label for="select-destino">Ponto de Destino:</label>
+            <select id="select-destino" class="select-route"></select>
+          </div>
           <div class="controls-container">
             <button id="btn-start-pause" class="btn btn-primary">
-              Iniciar Tarefa
+              Enviar Tarefa
             </button>
             <button id="btn-return" class="btn btn-secondary">
               Retornar à Base
