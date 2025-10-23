@@ -233,32 +233,25 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // --- LÓGICA PRINCIPAL DA SIMULAÇÃO ---
+  // **NOVO: Função para simular o comando de virada**
+  function executeCommand(command) {
+    // Remove classes de rotação antigas
+    agvElement.classList.remove("rotate-left", "rotate-right", "rotate-180");
 
-  /**
-   * SIMULAÇÃO DE API - Substitua isso pela sua chamada fetch real
-   * Encontra um caminho simples (não é o ideal, mas funciona para demo)
-   */
-  async function fakeApiCall(inicio, destino) {
-    console.log(`API FAKE: Solicitando rota de ${inicio} para ${destino}`);
-    await new Promise((resolve) => setTimeout(resolve, 500)); // Simula latência de rede
-
-    // Rota de placeholder - o seu backend faria isso com Dijkstra ou A*
-    // Para este demo, vamos criar uma rota simples:
-    let rota = [inicio];
-    if (inicio !== "Lilás" && destino !== "Lilás") {
-      rota.push("Lilás"); // Tenta passar pelo centro
+    // Adiciona a classe de rotação apropriada para simular a virada
+    if (command.includes("esquerda")) {
+      agvElement.classList.add("rotate-left");
+    } else if (command.includes("direita")) {
+      agvElement.classList.add("rotate-right");
+    } else if (command.includes("voltar")) {
+      agvElement.classList.add("rotate-180");
     }
-    if (rota[rota.length - 1] !== destino) {
-      rota.push(destino);
-    }
+    // Para 'reto' ou 'parar', nenhuma classe é adicionada (ou a anterior é mantida)
 
-    // Remove duplicatas caso inicio/destino seja "Lilás"
-    rota = [...new Set(rota)];
-
-    console.log("API FAKE: Rota calculada:", rota);
-    return { rota: rota };
+    // O retorno à posição original (sem rotação) deve ser feito logo antes do próximo movimento.
   }
+
+  // --- LÓGICA PRINCIPAL DA SIMULAÇÃO ---
 
   /** Função principal que envia a rota para a "API" e inicia a execução */
   async function enviarRota() {
@@ -274,32 +267,50 @@ document.addEventListener("DOMContentLoaded", () => {
     setAgvPosition(inicio, "Calculando rota...");
 
     try {
-      // *** TROQUE A LINHA ABAIXO PELA SUA CHAMADA FETCH REAL ***
-      const data = await fakeApiCall(inicio, destino);
-      // const res = await fetch('/api/route', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({ inicio, destino })
-      // });
-      // const data = await res.json();
+      // *** ATUALIZAÇÃO PARA RECEBER DADOS DO CÁLCULO DE ROTA ***
+      // Chamada ao backend que deve retornar {custo, caminho, comandos}
+      const res = await fetch("/api/route", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ inicio, destino }),
+      });
+      const { rota } = await res.json();
       // **********************************************************
 
-      if (!data.rota || data.rota.length === 0) {
-        throw new Error("API não retornou uma rota válida.");
+      if (!rota.caminho || rota.caminho.length === 0 || !rota.comandos) {
+        throw new Error("API não retornou um caminho ou comandos válidos.");
       }
 
-      alert("Rota recebida: " + JSON.stringify(data.rota));
+      // Validação básica: O número de comandos deve ser o número de segmentos (caminho.length - 1) + 1 para o 'parar' final.
+      if (rota.comandos.length !== rota.caminho.length) {
+        throw new Error(
+          `Comandos (${rota.comandos.length}) e Caminho (${rota.caminho.length}) dessincronizados.`
+        );
+      }
 
-      currentRoute = data.rota;
-      currentRouteIndex = 0; // Começa no primeiro item (início)
+      console.log("Rota recebida:", rota.caminho);
+      console.log("Comandos recebidos:", rota.comandos);
+
+      currentRoute = rota.caminho;
+      currentCommands = rota.comandos; // **Armazena os comandos**
+      currentRouteIndex = 0; // Começa no primeiro nó (início)
       isMoving = true;
 
       // Teleporta o AGV para o ponto inicial (índice 0)
       setAgvPosition(currentRoute[0], `Iniciando rota para ${currentRoute[1]}`);
 
-      // Prepara para mover para o *próximo* ponto (índice 1)
+      // O primeiro comando é a ação de SAÍDA do nó inicial. Executamos imediatamente.
+      const primeiroComando = currentCommands[0];
+      executeCommand(primeiroComando);
+      updateDashboard({
+        status: `Comando: ${primeiroComando}. Em trânsito para ${currentRoute[1]}`,
+        battery: parseInt(batteryPercentageElement.textContent),
+        rfid: rfidDataElement.textContent,
+      });
+
+      // O índice de rota é 1 para começar o movimento para o SEGUNDO nó.
       currentRouteIndex = 1;
-      simulationTimeout = setTimeout(executeRouteStep, 2000); // Inicia o 1º movimento
+      simulationTimeout = setTimeout(executeRouteStep, 3000); // 3 segundos para 1º movimento (inclui a virada inicial)
     } catch (error) {
       console.error("Falha ao buscar rota:", error);
       alert("Erro ao calcular rota: " + error.message);
@@ -309,15 +320,20 @@ document.addEventListener("DOMContentLoaded", () => {
 
   /** Executa um único passo da rota atual */
   function executeRouteStep() {
+    // O currentRouteIndex aponta para o *próximo* nó que vamos chegar.
     if (!isMoving || currentRouteIndex >= currentRoute.length) {
       isMoving = false;
       enableControls();
       return;
     }
 
-    const prevPointName = currentRoute[currentRouteIndex - 1];
-    const destinationPointName = currentRoute[currentRouteIndex];
+    // O comando na posição i-1 é a ação para ir de Nó(i-1) para Nó(i)
+    const prevPointName = currentRoute[currentRouteIndex - 1]; // Nó que acabamos de sair
+    const destinationPointName = currentRoute[currentRouteIndex]; // Nó que vamos chegar
     const destinationPoint = locations[destinationPointName];
+
+    // O comando já foi executado no nó anterior (prevPointName).
+    // O AGV agora se move.
 
     // 1. Mover o AGV (a transição do CSS faz a animação)
     agvElement.style.left = `${destinationPoint.x}%`;
@@ -332,26 +348,39 @@ document.addEventListener("DOMContentLoaded", () => {
     let battery = parseInt(batteryPercentageElement.textContent) - 1; // Simular queda
     if (battery < 0) battery = 100; // Recarrega se acabar (demo)
 
+    // O comando a ser executado *após a chegada* no destinationPointName é:
+    const nextCommandIndex = currentRouteIndex;
+    const nextCommand = currentCommands[nextCommandIndex];
+
     // 3. Verificar se é o fim da rota
-    if (currentRouteIndex === currentRoute.length - 1) {
-      statusText = `Chegou ao destino: ${destinationPointName}`;
+    if (destinationPointName === currentRoute[currentRoute.length - 1]) {
+      // Se for o destino, o comando deve ser 'parar' (último comando na lista)
+      statusText = `Chegou ao destino: ${destinationPointName}. Comando: ${nextCommand}`;
       isMoving = false;
       enableControls();
       if (destinationPointName === "Vermelho") rfid = "SKU-A45-VER"; // Simula coleta
       if (destinationPointName === "Azul") rfid = "Nenhuma"; // Simula entrega
+
+      // Remove qualquer rotação ao parar
+      agvElement.classList.remove("rotate-left", "rotate-right", "rotate-180");
     } else {
+      // Se não for o destino, executa o comando de decisão (virar/reto) no ponto de chegada
       const nextPointName = currentRoute[currentRouteIndex + 1];
-      statusText = `Em trânsito para ${nextPointName}`;
+
+      // 4. Executa o comando de decisão para a próxima transição
+      executeCommand(nextCommand);
+
+      statusText = `Em trânsito para ${nextPointName}. Comando: ${nextCommand}`;
     }
 
-    // 4. Atualizar o painel
+    // 5. Atualizar o painel
     updateDashboard({
       status: statusText,
       battery: battery,
       rfid: rfid,
     });
 
-    // 5. Agendar o próximo passo
+    // 6. Agendar o próximo passo
     currentRouteIndex++;
     if (isMoving) {
       simulationTimeout = setTimeout(executeRouteStep, 3000); // 3 segundos por passo

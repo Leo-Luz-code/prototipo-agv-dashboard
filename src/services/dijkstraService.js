@@ -1,8 +1,8 @@
-import { grafo, acoes } from "../models/mapModel.js";
+import { acoes, grafo } from "../models/mapModel.js";
 
 /**
  * Classe utilitária para simular o heapq do Python em JavaScript.
- * Armazena itens como [prioridade, valor] e sempre extrai o item com a menor prioridade.
+ * Armazena itens como [prioridade, valor] e sempre extrai o item com o menor prioridade.
  */
 class PriorityQueue {
   constructor() {
@@ -82,39 +82,39 @@ class PriorityQueue {
 }
 
 /**
- * Calcula a rota mais curta entre dois pontos usando o algoritmo de Dijkstra.
+ * Calcula a rota mais curta entre dois pontos usando o algoritmo de Dijkstra,
+ * considerando a posição anterior real do robô para o primeiro comando.
  *
- * @param {string} inicio - O nó inicial.
+ * @param {string} noAnteriorReal - O nó *real* onde o robô estava ANTES do 'inicio'.
+ * @param {string} inicio - O nó atual (onde o robô está).
  * @param {string} destino - O nó de destino.
- * @returns {{caminho: string[], comandos: string[]} | null} - Objeto contendo o caminho e os comandos de movimento, ou null se o destino não for alcançável.
+ * @returns {{custo: number, caminho: string[], comandos: string[]} | null} - Objeto contendo o caminho e os comandos de movimento, ou null se o destino não for alcançável.
  */
-export function calcularRota(inicio, destino) {
+export function calcularRota(noAnteriorReal, inicio, destino) {
   // Inicializa a fila de prioridade: [custo, nó_atual, caminho_percorrido]
   const fila = new PriorityQueue();
+  // O caminho_percorrido aqui armazena o caminho até o no_atual, *excluindo* o no_atual por enquanto.
   fila.push([0, inicio, []]);
 
-  // Conjunto de nós já visitados para evitar loops e reprocessamento
-  const visitados = new Set();
+  // Mapa para armazenar o custo mínimo encontrado até um nó
+  const custos = new Map();
+  custos.set(inicio, 0);
 
-  // Variáveis para armazenar o resultado final
-  let custoMinimo = null;
-  let caminhoMinimo = null;
+  // Mapa para rastrear o caminho mais curto (nó anterior)
+  const pais = new Map();
+
+  let destinoAlcancado = false;
 
   while (fila.size > 0) {
     const [custo, no_atual, caminho] = fila.pop();
 
-    if (visitados.has(no_atual)) {
+    if (custo > (custos.get(no_atual) ?? Infinity)) {
       continue;
     }
 
-    // Adiciona o nó atual ao caminho
-    const novoCaminho = caminho.concat([no_atual]);
-    visitados.add(no_atual);
-
     // Se o nó atual é o destino, a rota foi encontrada
     if (no_atual === destino) {
-      custoMinimo = custo;
-      caminhoMinimo = novoCaminho;
+      destinoAlcancado = true;
       break; // Saída após encontrar o caminho mais curto
     }
 
@@ -123,47 +123,58 @@ export function calcularRota(inicio, destino) {
     if (vizinhos) {
       for (const vizinho in vizinhos) {
         const peso = vizinhos[vizinho];
-        if (!visitados.has(vizinho)) {
-          fila.push([custo + peso, vizinho, novoCaminho]);
+        const novoCusto = custo + peso;
+
+        if (novoCusto < (custos.get(vizinho) ?? Infinity)) {
+          custos.set(vizinho, novoCusto);
+          pais.set(vizinho, no_atual);
+          fila.push([novoCusto, vizinho, null]); // O caminho é reconstruído no final
         }
       }
     }
   }
 
-  // Se o caminho não foi encontrado, retorna nulo
-  if (!caminhoMinimo) {
+  // --- Reconstrução do Caminho ---
+  if (!destinoAlcancado) {
     return null;
   }
 
-  // --- Geração dos Comandos de Movimento ---
+  const caminhoMinimo = [];
+  let no = destino;
+  while (no !== undefined) {
+    caminhoMinimo.unshift(no); // Adiciona no início do array
+    no = pais.get(no);
+  }
+
+  // O custo mínimo é o custo final no mapa
+  const custoMinimo = custos.get(destino);
+
+  // --- Geração dos Comandos de Movimento (Correção da Lógica) ---
   const comandos = [];
 
-  // Para gerar a ação, precisamos de: nó_anterior, nó_atual e nó_próximo.
-  // O nó anterior ao início é o próprio início.
-  const caminhoCompleto = [caminhoMinimo[0]].concat(caminhoMinimo);
+  // A lógica original usava [caminhoMinimo[0]] (o nó de início) como o "anterior" fictício.
+  // Agora, usaremos o 'noAnteriorReal' que foi passado para a função.
+  const caminhoComDecisoes = [noAnteriorReal].concat(caminhoMinimo);
 
-  for (let i = 1; i < caminhoMinimo.length; i++) {
-    // nó_atual no caminho é caminhoMinimo[i]
-    // nó_anterior é caminhoMinimo[i-1] (ou caminhoCompleto[i-1])
-    // nó_proximo é caminhoMinimo[i+1]
-
-    const anterior = caminhoMinimo[i - 1]; // Nó que acabou de visitar
-    const atual = caminhoMinimo[i]; // Ponto de decisão
-    const proximo = caminhoMinimo[i + 1]; // Próximo nó na rota
-
-    // Se for o último nó, a ação é simplesmente "parar" ou "chegou".
-    if (!proximo) {
-      comandos.push("parar");
-      break;
-    }
+  // Percorre os nós de decisão (começa no primeiro nó real de partida)
+  // O loop vai até o penúltimo elemento de caminhoComDecisoes, que é o último nó de decisão.
+  for (let i = 1; i < caminhoComDecisoes.length - 1; i++) {
+    const anterior = caminhoComDecisoes[i - 1];
+    const atual = caminhoComDecisoes[i];
+    const proximo = caminhoComDecisoes[i + 1];
 
     // Chave para buscar a ação no dicionário: (anterior, atual, proximo)
     const chave = `${anterior},${atual},${proximo}`;
 
-    // Busca a ação no mapa de ações, com "reto" como padrão de segurança
-    const direcao = acoes[chave] || "reto";
+    console.log(chave); // Mantido seu log
+
+    // Busca a ação no mapa de ações, com "reto" como padrão de segurança (ou um erro)
+    const direcao = acoes[chave] || "reto"; // O padrão 'reto' pode mascarar um erro de mapeamento
     comandos.push(direcao);
   }
+
+  // Adiciona o comando final de parada
+  comandos.push("parar");
 
   return {
     custo: custoMinimo,
@@ -171,3 +182,6 @@ export function calcularRota(inicio, destino) {
     comandos: comandos,
   };
 }
+
+// O restante do código do DOM (document.addEventListener...) permanece inalterado.
+// ...

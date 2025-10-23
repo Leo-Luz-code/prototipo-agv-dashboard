@@ -74,8 +74,8 @@ export const acoes = {
   "Azul-escuro,Azul,Azul-escuro": "voltar",
 
   // Ponto de decisão: Ciano (Canto / Nó de passagem)
-  "Vermelho,Ciano,Azul-acinzentado": "reto", // Conforme regra especial
-  "Azul-acinzentado,Ciano,Vermelho": "reto", // Conforme regra especial
+  "Vermelho,Ciano,Azul-acinzentado": "esquerda", // Conforme regra especial
+  "Azul-acinzentado,Ciano,Vermelho": "direita", // Conforme regra especial
   "Vermelho,Ciano,Vermelho": "voltar",
   "Azul-acinzentado,Ciano,Azul-acinzentado": "voltar",
 
