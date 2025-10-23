@@ -166,8 +166,6 @@ export function calcularRota(noAnteriorReal, inicio, destino) {
     // Chave para buscar a ação no dicionário: (anterior, atual, proximo)
     const chave = `${anterior},${atual},${proximo}`;
 
-    console.log(chave); // Mantido seu log
-
     // Busca a ação no mapa de ações, com "reto" como padrão de segurança (ou um erro)
     const direcao = acoes[chave] || "reto"; // O padrão 'reto' pode mascarar um erro de mapeamento
     comandos.push(direcao);

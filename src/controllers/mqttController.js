@@ -14,14 +14,18 @@ client.on("message", (topic, message) => {
     try {
       const data = JSON.parse(raw);
       updateStatus(data);
-      console.log("[MQTT] Status recebido:", data);
+
+      const fullStatus = getStatusFromAGV();
+      broadcast("agv/status", fullStatus);
+
+      console.log("[MQTT] Status recebido e transmitido:", fullStatus);
     } catch (e) {
       console.error("[MQTT] Erro ao parsear mensagem:", e);
     }
   }
 });
 
-export function publicarComandos(comandos) {
-  client.publish("agv/commands", JSON.stringify(comandos));
-  console.log("[MQTT] Comandos enviados:", comandos);
+export function publicarRota(rota) {
+  client.publish("agv/commands", JSON.stringify(rota));
+  console.log("[MQTT] rota enviada:", rota);
 }

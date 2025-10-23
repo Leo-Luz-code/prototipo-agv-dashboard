@@ -21,6 +21,7 @@
   "homepage": "https://github.com/Leo-Luz-code/prototipo-agv-dashboard#readme",
   "dependencies": {
     "express": "^5.1.0",
-    "mqtt": "^5.14.1"
+    "mqtt": "^5.14.1",
+    "socket.io": "^4.8.1"
   }
 }

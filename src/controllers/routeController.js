@@ -1,5 +1,5 @@
 import { calcularRota } from "../services/dijkstraService.js";
-import { publicarComandos } from "./mqttController.js";
+import { publicarRota } from "./mqttController.js";
 
 // --- Estado do Robô ---
 // O robô sempre começa em "Branco".
@@ -31,8 +31,8 @@ export function generateRoute(req, res) {
     return res.status(404).json({ error: "Rota não encontrada ou inválida." });
   }
 
-  // 2. Publica os comandos
-  publicarComandos(rota.comandos);
+  // 2. Publica a rota
+  publicarRota(rota);
 
   // 3. Atualiza o estado do servidor para a PRÓXIMA requisição
   // O novo 'noAtual' é o último item do caminho (o destino).

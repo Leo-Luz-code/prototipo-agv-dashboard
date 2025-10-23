@@ -1,5 +1,6 @@
 document.addEventListener("DOMContentLoaded", () => {
   // --- CONFIGURAÇÃO E REFERÊNCIAS ---
+  const socket = io();
   const svg = document.getElementById("map-svg");
   const agvElement = document.getElementById("agv");
   const statusElement = document.getElementById("agv-status");
@@ -14,6 +15,32 @@ document.addEventListener("DOMContentLoaded", () => {
   const btnStartPause = document.getElementById("btn-start-pause");
   const btnReturn = document.getElementById("btn-return");
   const btnEmergencyStop = document.getElementById("btn-emergency-stop");
+
+  // Ouve pelo evento 'agv/status' que o backend está transmitindo
+  socket.on("agv/status", (status) => {
+    console.log("[Socket.IO] Status recebido:", status);
+
+    // 'status' é o objeto completo { posicao, bateria, sensores, ... }
+
+    // 1. Atualizar o Dashboard
+    updateDashboard({
+      status: status.posicao || "Ocioso",
+      battery: status.bateria || 100,
+      rfid: status.sensores?.rfid || "Nenhuma",
+    });
+
+    // 2. Atualizar a posição visual do AGV
+    const dropdownInicio = document.getElementById("select-inicio");
+    if (
+      !isMoving &&
+      status.posicao &&
+      dropdownInicio.value !== status.posicao
+    ) {
+      console.log(`Sincronizando posição (WebSocket): ${status.posicao}`);
+      setAgvPosition(status.posicao, "Ocioso (Sincronizado)");
+      dropdownInicio.value = status.posicao;
+    }
+  });
 
   // Mapeamento de Posições (coordenadas em % [x, y])
   const locations = {
