@@ -73,6 +73,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // --- VARIÁVEIS DE ESTADO DA SIMULAÇÃO ---
   let currentRoute = [];
+  let currentCommands = []; // <-- ADICIONADO (Estava faltando na declaração global)
   let currentRouteIndex = 0;
   let isMoving = false;
   let simulationTimeout; // Referência para o setTimeout
@@ -175,6 +176,7 @@ document.addEventListener("DOMContentLoaded", () => {
     btnReturn.disabled = true;
     selectInicio.disabled = true;
     selectDestino.disabled = true;
+    btnEmergencyStop.disabled = false; // <-- ADICIONADO (Agora pode parar)
     btnStartPause.textContent = "Em Execução...";
   }
 
@@ -183,6 +185,7 @@ document.addEventListener("DOMContentLoaded", () => {
     btnReturn.disabled = false;
     selectInicio.disabled = false;
     selectDestino.disabled = false;
+    btnEmergencyStop.disabled = true; // <-- ADICIONADO (Não há o que parar)
     btnStartPause.textContent = "Enviar Tarefa";
   }
 
@@ -191,8 +194,15 @@ document.addEventListener("DOMContentLoaded", () => {
   function updateDashboard(data) {
     // Atualiza Status
     statusElement.textContent = data.status;
-    statusElement.className = "";
-    if (data.status.includes("trânsito") || data.status.includes("Retornando"))
+    statusElement.className = ""; // Limpa classes
+
+    // <-- LÓGICA MODIFICADA para incluir o status de perigo -->
+    if (data.status.includes("PARADA DE EMERGÊNCIA")) {
+      statusElement.classList.add("status-danger");
+    } else if (
+      data.status.includes("trânsito") ||
+      data.status.includes("Retornando")
+    )
       statusElement.classList.add("status-moving");
     else if (data.status.includes("Ocioso"))
       statusElement.classList.add("status-online");
@@ -253,6 +263,30 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // --- LÓGICA PRINCIPAL DA SIMULAÇÃO ---
 
+  /** Função de parada de emergência */ // <-- ADICIONADO
+  function emergencyStop() {
+    console.warn("PARADA DE EMERGÊNCIA ACIONADA!");
+    isMoving = false;
+    clearTimeout(simulationTimeout);
+    stopAllPulseAnimations();
+
+    // Atualiza o painel
+    updateDashboard({
+      status: "PARADA DE EMERGÊNCIA",
+      battery: parseInt(batteryPercentageElement.textContent) || 100,
+      rfid: rfidDataElement.textContent || "Nenhuma",
+    });
+
+    // Trava os controles em um estado de "parado"
+    // O usuário precisará recarregar ou usar o "Reset" (se houver)
+    btnStartPause.disabled = true;
+    btnReturn.disabled = true;
+    selectInicio.disabled = true;
+    selectDestino.disabled = true;
+    btnEmergencyStop.disabled = true; // Já foi pressionado
+    btnStartPause.textContent = "Parado (Emergência)";
+  }
+
   /** Função principal que envia a rota para a "API" e inicia a execução */
   async function enviarRota() {
     const inicio = selectInicio.value;
@@ -274,6 +308,13 @@ document.addEventListener("DOMContentLoaded", () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ inicio, destino }),
       });
+
+      // Verifica se a resposta foi bem-sucedida
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.error || `Erro ${res.status} do servidor`);
+      }
+
       const { rota } = await res.json();
       // **********************************************************
 
@@ -384,6 +425,8 @@ document.addEventListener("DOMContentLoaded", () => {
     currentRouteIndex++;
     if (isMoving) {
       simulationTimeout = setTimeout(executeRouteStep, 3000); // 3 segundos por passo
+    } else {
+      selectInicio.value = selectDestino.value;
     }
   }
 
@@ -392,17 +435,31 @@ document.addEventListener("DOMContentLoaded", () => {
   populateDropdowns();
   resetSimulation(); // Define o estado inicial
 
-  // Adiciona o listener ao botão
+  // Adiciona os listeners aos botões
   btnStartPause.addEventListener("click", enviarRota);
+  btnEmergencyStop.addEventListener("click", emergencyStop); // <-- ADICIONADO
+
   // Opcional: fazer o botão de retorno funcionar
   btnReturn.addEventListener("click", () => {
     if (isMoving) {
       alert("Pare a tarefa atual antes de retornar à base.");
       return;
     }
+
+    // Pega o último nó alcançado (ou o nó de início se a rota nunca começou)
+    let ultimoNo = "Branco";
+    if (currentRoute.length > 0) {
+      // Se a rota terminou, o índice estará fora dos limites. Pegue o último item.
+      if (currentRouteIndex >= currentRoute.length) {
+        ultimoNo = currentRoute[currentRoute.length - 1];
+      } else {
+        // Se parou no meio, pegue o nó anterior ao próximo passo
+        ultimoNo = currentRoute[currentRouteIndex - 1];
+      }
+    }
+
     // Força o envio de uma rota para o "Branco"
-    selectInicio.value =
-      locations[currentRoute[currentRouteIndex - 1] || "Azul"].el.id; // Pega último ponto
+    selectInicio.value = ultimoNo;
     selectDestino.value = "Branco";
     enviarRota();
   });
