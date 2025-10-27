@@ -1,4 +1,6 @@
 document.addEventListener("DOMContentLoaded", () => {
+  console.log("[APP] 🚀 DOM carregado, inicializando...");
+
   // --- CONFIGURAÇÃO E REFERÊNCIAS ---
   const socket = io();
   const svg = document.getElementById("map-svg");
@@ -9,6 +11,12 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("battery-percentage");
   const rfidDataElement = document.getElementById("rfid-data");
 
+  // Verificar se os elementos existem
+  console.log("[APP] 📋 Elementos carregados:");
+  console.log("  - rfidDataElement:", !!rfidDataElement);
+  console.log("  - statusElement:", !!statusElement);
+  console.log("  - socket:", !!socket);
+
   // Novas referências de controle
   const selectInicio = document.getElementById("select-inicio");
   const selectDestino = document.getElementById("select-destino");
@@ -16,16 +24,27 @@ document.addEventListener("DOMContentLoaded", () => {
   const btnReturn = document.getElementById("btn-return");
   const btnEmergencyStop = document.getElementById("btn-emergency-stop");
 
+  // Conexão estabelecida
+  socket.on("connect", () => {
+    console.log("[Socket.IO] ✅ CONECTADO ao servidor!");
+    console.log("[Socket.IO] 🔑 Socket ID:", socket.id);
+  });
+
+  // Desconectado
+  socket.on("disconnect", () => {
+    console.log("[Socket.IO] ❌ DESCONECTADO do servidor!");
+  });
+
   // Ouve pelo evento 'agv/status' que o backend está transmitindo
   socket.on("agv/status", (status) => {
-    console.log("[Socket.IO] 📩 Status recebido:", status);
+    console.log("[Socket.IO] 📩 Status recebido em tempo real:", status);
     console.log("[Socket.IO] 🏷️  RFID no status:", status.sensores);
 
     // 'status' é o objeto completo { posicao, bateria, sensores, ... }
 
-    // 1. Atualizar o Dashboard
+    // 1. Atualizar o Dashboard IMEDIATAMENTE
     const rfidValue = status.sensores?.rfid || "Nenhuma";
-    console.log(`[Socket.IO] ✅ Atualizando RFID para: ${rfidValue}`);
+    console.log(`[Socket.IO] ✅ Atualizando RFID AGORA para: ${rfidValue}`);
 
     updateDashboard({
       status: status.posicao || "Ocioso",
@@ -45,6 +64,8 @@ document.addEventListener("DOMContentLoaded", () => {
       dropdownInicio.value = status.posicao;
     }
   });
+
+  console.log("[Socket.IO] 📝 Event listener 'agv/status' registrado!");
 
   // Mapeamento de Posições (coordenadas em % [x, y])
   const locations = {
@@ -251,10 +272,25 @@ document.addEventListener("DOMContentLoaded", () => {
       batteryLevelElement.style.backgroundColor = "var(--warning-color)";
     else batteryLevelElement.style.backgroundColor = "var(--danger-color)";
 
-    // Atualiza RFID
+    // Atualiza RFID - FORÇAR ATUALIZAÇÃO
     console.log(`[Dashboard] 🏷️  Atualizando elemento RFID para: ${data.rfid}`);
-    rfidDataElement.textContent = data.rfid;
-    console.log(`[Dashboard] ✅ Elemento RFID atualizado. Valor atual: ${rfidDataElement.textContent}`);
+
+    // Força a atualização do DOM
+    if (rfidDataElement) {
+      rfidDataElement.textContent = data.rfid;
+      // Adiciona efeito visual de atualização
+      rfidDataElement.style.transition = "all 0.3s ease";
+      rfidDataElement.style.transform = "scale(1.1)";
+      rfidDataElement.style.color = data.rfid !== "Nenhuma" ? "#4CAF50" : "#666";
+
+      setTimeout(() => {
+        rfidDataElement.style.transform = "scale(1)";
+      }, 300);
+
+      console.log(`[Dashboard] ✅ Elemento RFID atualizado em tempo real! Valor: ${rfidDataElement.textContent}`);
+    } else {
+      console.error("[Dashboard] ❌ Elemento rfid-data não encontrado!");
+    }
   }
 
   function stopAllPulseAnimations() {
