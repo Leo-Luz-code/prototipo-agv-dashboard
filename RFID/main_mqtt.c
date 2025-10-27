@@ -17,8 +17,8 @@
 // ========== CONFIGURAÇÕES DO PROJETO ==========
 
 // 🔧 CONFIGURAÇÕES DE WIFI
-#define WIFI_SSID       "TP-Link_29B5"           // ⚠️ ALTERE AQUI: Nome da sua rede WiFi
-#define WIFI_PASSWORD   "23438651"          // ⚠️ ALTERE AQUI: Senha da sua rede WiFi
+#define WIFI_SSID       "Nome_rede"           // ⚠️ ALTERE AQUI: Nome da sua rede WiFi
+#define WIFI_PASSWORD   "Senha_rede"          // ⚠️ ALTERE AQUI: Senha da sua rede WiFi
 
 // 🔧 CONFIGURAÇÕES DO BROKER MQTT
 #define MQTT_BROKER_IP  "192.168.0.103"      // ⚠️ ALTERE AQUI: IP do computador rodando o broker
