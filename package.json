@@ -6,7 +6,9 @@
   "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js"
+    "start": "node server.js",
+    "test-rfid": "npx mqtt pub -t agv/rfid -h localhost -m \"{\\\"tag\\\":\\\"TESTE123\\\",\\\"timestamp\\\":999}\"",
+    "monitor-mqtt": "npx mqtt sub -t agv/# -h localhost -v"
   },
   "repository": {
     "type": "git",
@@ -20,6 +22,7 @@
   },
   "homepage": "https://github.com/Leo-Luz-code/prototipo-agv-dashboard#readme",
   "dependencies": {
+    "aedes": "^0.51.3",
     "express": "^5.1.0",
     "mqtt": "^5.14.1",
     "socket.io": "^4.8.1"

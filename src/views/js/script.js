@@ -18,15 +18,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Ouve pelo evento 'agv/status' que o backend está transmitindo
   socket.on("agv/status", (status) => {
-    console.log("[Socket.IO] Status recebido:", status);
+    console.log("[Socket.IO] 📩 Status recebido:", status);
+    console.log("[Socket.IO] 🏷️  RFID no status:", status.sensores);
 
     // 'status' é o objeto completo { posicao, bateria, sensores, ... }
 
     // 1. Atualizar o Dashboard
+    const rfidValue = status.sensores?.rfid || "Nenhuma";
+    console.log(`[Socket.IO] ✅ Atualizando RFID para: ${rfidValue}`);
+
     updateDashboard({
       status: status.posicao || "Ocioso",
       battery: status.bateria || 100,
-      rfid: status.sensores?.rfid || "Nenhuma",
+      rfid: rfidValue,
     });
 
     // 2. Atualizar a posição visual do AGV
@@ -219,6 +223,8 @@ document.addEventListener("DOMContentLoaded", () => {
   // --- FUNÇÕES DE ATUALIZAÇÃO DA INTERFACE ---
 
   function updateDashboard(data) {
+    console.log("[Dashboard] 🔄 Atualizando dashboard com:", data);
+
     // Atualiza Status
     statusElement.textContent = data.status;
     statusElement.className = ""; // Limpa classes
@@ -246,7 +252,9 @@ document.addEventListener("DOMContentLoaded", () => {
     else batteryLevelElement.style.backgroundColor = "var(--danger-color)";
 
     // Atualiza RFID
+    console.log(`[Dashboard] 🏷️  Atualizando elemento RFID para: ${data.rfid}`);
     rfidDataElement.textContent = data.rfid;
+    console.log(`[Dashboard] ✅ Elemento RFID atualizado. Valor atual: ${rfidDataElement.textContent}`);
   }
 
   function stopAllPulseAnimations() {

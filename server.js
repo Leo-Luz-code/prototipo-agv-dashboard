@@ -7,7 +7,10 @@ import { appConfig } from "./src/config/serverConfig.js";
 import router from "./src/routes/index.js";
 import { initSocketService } from "./src/services/socketService.js";
 
-// inicia MQTT listener
+// 🆕 Inicia o broker MQTT embutido (substitui o Mosquitto)
+import "./src/config/mqttBroker.js";
+
+// inicia MQTT listener (cliente que se conecta ao broker)
 import "./src/controllers/mqttController.js";
 
 const app = express();
