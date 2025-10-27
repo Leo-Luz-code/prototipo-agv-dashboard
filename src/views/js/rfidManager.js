@@ -7,6 +7,10 @@ document.addEventListener("DOMContentLoaded", () => {
   const btnRegisterTag = document.getElementById("btn-register-tag");
   const rfidList = document.getElementById("rfid-list");
 
+  // Elementos da leitura atual
+  const rfidDataElement = document.getElementById("rfid-data");
+  const btnCopyTagToRegister = document.getElementById("btn-copy-tag-to-register");
+
   /**
    * Carrega e exibe todas as tags cadastradas
    */
@@ -189,8 +193,37 @@ document.addEventListener("DOMContentLoaded", () => {
     }, 2000);
   }
 
+  /**
+   * Copia o valor da tag lida para o campo de cadastro
+   */
+  function copyTagToRegister() {
+    const tagValue = rfidDataElement.textContent.trim();
+
+    // Verifica se há uma tag válida (não é "Nenhuma" ou vazio)
+    if (!tagValue || tagValue === "Nenhuma" || tagValue === "---") {
+      showNotification("Nenhuma tag para copiar!", "error");
+      return;
+    }
+
+    // Copia o valor para o campo de cadastro
+    inputTagId.value = tagValue;
+
+    // Foca no campo de nome do item para continuar o cadastro
+    inputItemName.focus();
+
+    // Feedback visual
+    showNotification("Tag copiada para cadastro! ✅", "success");
+
+    console.log(`[RFID MANAGER] ✅ Tag ${tagValue} copiada para cadastro`);
+  }
+
   // Event listeners
   btnRegisterTag.addEventListener("click", handleRegisterTag);
+
+  // Botão de copiar tag para cadastro
+  if (btnCopyTagToRegister) {
+    btnCopyTagToRegister.addEventListener("click", copyTagToRegister);
+  }
 
   // Permite cadastrar pressionando Enter
   inputItemName.addEventListener("keypress", (e) => {
@@ -201,6 +234,32 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Carrega as tags ao iniciar
   loadTags();
+
+  /**
+   * Atualiza o estado do botão de copiar tag baseado no conteúdo
+   */
+  function updateCopyButtonState() {
+    const tagValue = rfidDataElement.textContent.trim();
+    const isValidTag = tagValue && tagValue !== "Nenhuma" && tagValue !== "---";
+
+    if (btnCopyTagToRegister) {
+      btnCopyTagToRegister.disabled = !isValidTag;
+    }
+  }
+
+  // Observa mudanças no elemento rfid-data para habilitar/desabilitar o botão
+  if (rfidDataElement && btnCopyTagToRegister) {
+    // Estado inicial
+    updateCopyButtonState();
+
+    // Observador de mudanças
+    const observer = new MutationObserver(updateCopyButtonState);
+    observer.observe(rfidDataElement, {
+      childList: true,
+      characterData: true,
+      subtree: true,
+    });
+  }
 
   console.log("[RFID MANAGER] ✅ Gerenciador inicializado!");
 });

@@ -38,6 +38,16 @@ header {
 .map-section {
   flex: 3;
   min-width: 600px;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  overflow-x: visible;
+}
+
+/* RFID card dentro da map-section ocupa toda a largura */
+.map-section .rfid-main-card {
+  width: 100%;
+  max-width: none;
 }
 
 .info-section {
@@ -55,6 +65,10 @@ h3 {
   border-bottom: 1px solid var(--border-color);
   padding-bottom: 0.5rem;
   margin-top: 0;
+}
+
+h2 {
+  margin-bottom: 1rem;
 }
 
 .map-container {
@@ -129,8 +143,9 @@ h3 {
 
 .agv-marker {
   position: absolute;
-  width: 60px;
-  height: 60px;
+  width: auto;
+  min-width: 60px;
+  height: auto;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -140,6 +155,7 @@ h3 {
   /* ATUALIZADO: A transição de 1s foi movida para a animação */
   /* Isso permite que o 'teleporte' inicial seja instantâneo */
   transition: left 1s ease-in-out, top 1s ease-in-out;
+  gap: 5px;
 }
 
 /* Classe para teleporte (sem animação) */
@@ -161,6 +177,65 @@ h3 {
   font-weight: bold;
   color: white;
   margin-top: 5px;
+}
+
+/* Badge de carga do AGV */
+.agv-cargo-badge {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: linear-gradient(135deg, rgba(40, 167, 69, 0.95) 0%, rgba(34, 139, 58, 0.95) 100%);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 6px;
+  padding: 4px 8px;
+  margin-bottom: 5px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(4px);
+  white-space: nowrap;
+  max-width: 150px;
+}
+
+.agv-cargo-badge.empty {
+  background: linear-gradient(135deg, rgba(108, 117, 125, 0.9) 0%, rgba(90, 98, 104, 0.9) 100%);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.agv-cargo-badge.unregistered {
+  background: linear-gradient(135deg, rgba(255, 193, 7, 0.95) 0%, rgba(255, 152, 0, 0.95) 100%);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+.agv-cargo-icon {
+  font-size: 0.9rem;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
+}
+
+.agv-cargo-name {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: white;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  letter-spacing: 0.3px;
+}
+
+/* Animação quando a carga muda */
+@keyframes cargo-update {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(40, 167, 69, 0.6);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.agv-cargo-badge.updated {
+  animation: cargo-update 0.5s ease-out;
 }
 
 .info-card {
@@ -290,12 +365,7 @@ h3 {
 }
 
 /* ===== GERENCIAMENTO DE TAGS RFID ===== */
-.rfid-item-name {
-  margin-top: 0.5rem;
-  font-size: 1.1rem;
-  font-weight: bold;
-  display: none;
-}
+/* NOTA: Este estilo foi movido para .rfid-item-name-display */
 
 .rfid-form {
   display: flex;
@@ -459,6 +529,204 @@ h3 {
   border-left-color: var(--danger-color);
 }
 
+/* ===== CARD PRINCIPAL RFID ===== */
+.rfid-main-card {
+  background: linear-gradient(135deg, var(--card-color) 0%, rgba(37, 40, 46, 0.8) 100%);
+  border-left: 4px solid var(--primary-color);
+  /* Layout em Grid: h3 ocupa toda a largura, depois 3 seções com 2 divisores verticais */
+  display: grid;
+  grid-template-columns: 1fr auto 1fr auto 1fr;
+  grid-template-rows: auto 1fr;
+  gap: 0;
+  /* Aumentado em 20% total - alinhado à esquerda */
+  padding: 1.65rem;
+  transform: scale(1.2);
+  transform-origin: top left;
+  margin: 2rem 0;
+  /* Permite overflow à direita se necessário */
+  overflow-x: visible;
+}
+
+.rfid-main-card > h3 {
+  color: var(--primary-color);
+  font-size: 1.43rem;
+  margin-bottom: 1.65rem;
+  /* O título ocupa toda a primeira linha */
+  grid-column: 1 / -1;
+}
+
+/* ===== SEÇÕES RFID ===== */
+.rfid-section {
+  display: flex;
+  flex-direction: column;
+  padding: 0 1rem;
+}
+
+.rfid-section-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.rfid-section-icon {
+  font-size: 1.2rem;
+}
+
+.rfid-section-header h4 {
+  margin: 0;
+  padding: 0;
+  border: none;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-color);
+}
+
+.rfid-divider {
+  width: 1px;
+  height: auto;
+  background: linear-gradient(180deg, transparent, var(--border-color), transparent);
+  margin: 0;
+  align-self: stretch;
+}
+
+/* ===== LEITURA ATUAL ===== */
+.rfid-current-reading {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  background-color: rgba(0, 123, 255, 0.05);
+  border: 1px solid rgba(0, 123, 255, 0.2);
+  border-radius: 6px;
+  padding: 1rem;
+}
+
+.rfid-reading-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.rfid-reading-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-muted-color);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.rfid-reading-value-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.rfid-reading-value {
+  font-family: monospace;
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: var(--warning-color);
+  margin: 0;
+  padding: 0.5rem;
+  background-color: var(--bg-color);
+  border-radius: 4px;
+  border-left: 3px solid var(--primary-color);
+  flex: 1;
+}
+
+.btn-copy-tag {
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 0.5rem 1rem;
+  font-size: 1.2rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 45px;
+  height: 100%;
+}
+
+.btn-copy-tag:hover {
+  background-color: #0069d9;
+  transform: translateX(3px);
+}
+
+.btn-copy-tag:active {
+  transform: translateX(3px) scale(0.95);
+}
+
+.btn-copy-tag:disabled {
+  background-color: var(--text-muted-color);
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-clear-cargo {
+  width: 100%;
+  margin-top: 0.5rem;
+  background-color: #6c757d;
+  font-size: 0.9rem;
+  padding: 0.6rem;
+}
+
+.btn-clear-cargo:hover {
+  background-color: #5a6268;
+}
+
+.btn-clear-cargo:disabled {
+  background-color: var(--text-muted-color);
+  cursor: not-allowed;
+}
+
+.rfid-item-name-display {
+  color: var(--text-muted-color);
+  border-left-color: var(--border-color);
+  font-style: italic;
+}
+
+/* Quando há item identificado */
+.rfid-item-name-display.item-found {
+  color: var(--success-color);
+  border-left-color: var(--success-color);
+  font-style: normal;
+  font-weight: bold;
+}
+
+/* Quando há tag não cadastrada */
+.rfid-item-name-display.item-not-found {
+  color: var(--warning-color);
+  border-left-color: var(--warning-color);
+  font-style: normal;
+}
+
+/* Quando não há leitura */
+#rfid-data:empty::before,
+.rfid-reading-value:empty::before {
+  content: "---";
+  color: var(--text-muted-color);
+}
+
+/* ===== AJUSTES NO FORMULÁRIO ===== */
+.rfid-section .rfid-form {
+  margin-bottom: 0;
+}
+
+/* ===== AJUSTES NA LISTA ===== */
+.rfid-section .rfid-list-container {
+  margin-top: 0;
+}
+
+.rfid-section .rfid-list-container h4 {
+  display: none; /* Removemos o h4 duplicado, já temos o header da seção */
+}
+
+/* ===== MELHORIAS NOS ITENS DA LISTA ===== */
+.rfid-item {
+  background: linear-gradient(135deg, var(--bg-color) 0%, rgba(26, 28, 32, 0.8) 100%);
+}
+
 /* Scrollbar customizada para lista RFID */
 .rfid-list::-webkit-scrollbar {
   width: 6px;
@@ -476,4 +744,48 @@ h3 {
 
 .rfid-list::-webkit-scrollbar-thumb:hover {
   background: var(--primary-color);
+}
+
+/* ===== RESPONSIVIDADE ===== */
+/* Tablets e telas médias: RFID volta ao layout vertical */
+@media (max-width: 1400px) {
+  .rfid-main-card {
+    /* Em telas menores, volta ao layout vertical */
+    display: flex;
+    flex-direction: column;
+    /* Remove o scale em telas menores */
+    transform: none;
+  }
+
+  .rfid-section {
+    padding: 0;
+    margin-bottom: 1rem;
+  }
+
+  .rfid-divider {
+    /* Divisor volta a ser horizontal */
+    width: auto;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border-color), transparent);
+    margin: 1.5rem 0;
+  }
+}
+
+/* Telas pequenas: Layout completamente vertical */
+@media (max-width: 768px) {
+  .dashboard-container {
+    flex-direction: column;
+  }
+
+  .map-section {
+    min-width: 100%;
+  }
+
+  .info-section {
+    min-width: 100%;
+  }
+
+  .map-container {
+    height: 400px;
+  }
 }

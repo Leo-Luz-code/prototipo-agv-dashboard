@@ -101,7 +101,8 @@ cd prototipo-agv-dashboard
 
 # Instalar dependências (só precisa fazer 1 vez)
 npm install
-
+npm init -y
+npm install express
 # Iniciar servidor
 npm start
 ```

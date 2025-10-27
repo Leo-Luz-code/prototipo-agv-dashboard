@@ -2,7 +2,7 @@
   "name": "http_server_agv",
   "version": "1.0.0",
   "type": "module",
-  "description": "",
+  "description": "Dashboard web em tempo real para controle de AGV (Automated Guided Vehicle) com integração RFID usando Raspberry Pi Pico W.",
   "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
