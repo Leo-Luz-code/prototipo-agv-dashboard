@@ -10,10 +10,12 @@ document.addEventListener("DOMContentLoaded", () => {
   const batteryPercentageElement =
     document.getElementById("battery-percentage");
   const rfidDataElement = document.getElementById("rfid-data");
+  const rfidItemNameElement = document.getElementById("rfid-item-name");
 
   // Verificar se os elementos existem
   console.log("[APP] 📋 Elementos carregados:");
   console.log("  - rfidDataElement:", !!rfidDataElement);
+  console.log("  - rfidItemNameElement:", !!rfidItemNameElement);
   console.log("  - statusElement:", !!statusElement);
   console.log("  - socket:", !!socket);
 
@@ -44,12 +46,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // 1. Atualizar o Dashboard IMEDIATAMENTE
     const rfidValue = status.sensores?.rfid || "Nenhuma";
+    const rfidItemName = status.sensores?.rfidItemName || null;
     console.log(`[Socket.IO] ✅ Atualizando RFID AGORA para: ${rfidValue}`);
+    if (rfidItemName) {
+      console.log(`[Socket.IO] 📦 Item: ${rfidItemName}`);
+    }
 
     updateDashboard({
       status: status.posicao || "Ocioso",
       battery: status.bateria || 100,
       rfid: rfidValue,
+      rfidItemName: rfidItemName,
     });
 
     // 2. Atualizar a posição visual do AGV
@@ -290,6 +297,25 @@ document.addEventListener("DOMContentLoaded", () => {
       console.log(`[Dashboard] ✅ Elemento RFID atualizado em tempo real! Valor: ${rfidDataElement.textContent}`);
     } else {
       console.error("[Dashboard] ❌ Elemento rfid-data não encontrado!");
+    }
+
+    // Atualiza o nome do item RFID
+    if (rfidItemNameElement) {
+      if (data.rfidItemName) {
+        rfidItemNameElement.textContent = `📦 ${data.rfidItemName}`;
+        rfidItemNameElement.style.display = "block";
+        rfidItemNameElement.style.color = "#4CAF50";
+        rfidItemNameElement.style.fontWeight = "bold";
+        console.log(`[Dashboard] 📦 Item identificado: ${data.rfidItemName}`);
+      } else if (data.rfid !== "Nenhuma") {
+        rfidItemNameElement.textContent = "⚠️ Tag não cadastrada";
+        rfidItemNameElement.style.display = "block";
+        rfidItemNameElement.style.color = "#ff9800";
+        rfidItemNameElement.style.fontWeight = "normal";
+      } else {
+        rfidItemNameElement.textContent = "";
+        rfidItemNameElement.style.display = "none";
+      }
     }
   }
 

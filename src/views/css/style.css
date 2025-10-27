@@ -288,3 +288,192 @@ h3 {
   background-color: #333;
   cursor: not-allowed;
 }
+
+/* ===== GERENCIAMENTO DE TAGS RFID ===== */
+.rfid-item-name {
+  margin-top: 0.5rem;
+  font-size: 1.1rem;
+  font-weight: bold;
+  display: none;
+}
+
+.rfid-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.rfid-input {
+  padding: 0.6rem;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+  border-radius: 5px;
+  font-size: 0.95rem;
+}
+
+.rfid-input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+}
+
+.btn-small {
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+}
+
+.rfid-list-container {
+  margin-top: 1rem;
+}
+
+.rfid-list-container h4 {
+  margin-bottom: 0.75rem;
+  color: var(--text-muted-color);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.rfid-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  max-height: 300px;
+  overflow-y: auto;
+  padding-right: 0.5rem;
+}
+
+.rfid-list-empty {
+  color: var(--text-muted-color);
+  font-style: italic;
+  text-align: center;
+  padding: 1rem;
+}
+
+.rfid-item {
+  background-color: var(--bg-color);
+  border: 1px solid var(--border-color);
+  border-radius: 5px;
+  padding: 0.75rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  transition: all 0.2s ease;
+}
+
+.rfid-item:hover {
+  border-color: var(--primary-color);
+  transform: translateY(-2px);
+  box-shadow: 0 2px 8px rgba(0, 123, 255, 0.2);
+}
+
+.rfid-item-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.rfid-item-tag {
+  font-family: monospace;
+  font-size: 0.85rem;
+  color: var(--primary-color);
+  font-weight: bold;
+}
+
+.rfid-item-name-input {
+  padding: 0.4rem;
+  background-color: var(--card-color);
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+  border-radius: 3px;
+  font-size: 0.95rem;
+}
+
+.rfid-item-name-input:focus {
+  outline: none;
+  border-color: var(--success-color);
+}
+
+.rfid-item-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.btn-rfid-save,
+.btn-rfid-delete {
+  padding: 0.4rem 0.6rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: all 0.2s ease;
+}
+
+.btn-rfid-save {
+  background-color: var(--success-color);
+}
+
+.btn-rfid-save:hover {
+  background-color: #218838;
+  transform: scale(1.1);
+}
+
+.btn-rfid-delete {
+  background-color: var(--danger-color);
+}
+
+.btn-rfid-delete:hover {
+  background-color: #c82333;
+  transform: scale(1.1);
+}
+
+/* Notificações */
+.notification {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  padding: 1rem 1.5rem;
+  border-radius: 5px;
+  background-color: var(--card-color);
+  border-left: 4px solid var(--success-color);
+  color: var(--text-color);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  opacity: 0;
+  transform: translateX(400px);
+  transition: all 0.3s ease;
+  z-index: 10000;
+}
+
+.notification.show {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.notification-success {
+  border-left-color: var(--success-color);
+}
+
+.notification-error {
+  border-left-color: var(--danger-color);
+}
+
+/* Scrollbar customizada para lista RFID */
+.rfid-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.rfid-list::-webkit-scrollbar-track {
+  background: var(--card-color);
+  border-radius: 10px;
+}
+
+.rfid-list::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 10px;
+}
+
+.rfid-list::-webkit-scrollbar-thumb:hover {
+  background: var(--primary-color);
+}

@@ -1,6 +1,7 @@
 import aedes from 'aedes';
 import { createServer } from 'net';
 import { updateStatus, getStatusFromAGV } from '../services/agvService.js';
+import { getTagInfo } from '../services/rfidService.js';
 
 const broker = aedes();
 const port = 1883;
@@ -48,10 +49,21 @@ broker.on('publish', async (packet, client) => {
         const data = JSON.parse(payload);
         console.log(`[BROKER MQTT] 🏷️ RFID DETECTADO: ${data.tag}`);
 
-        // Atualizar status
+        // Buscar informações da tag
+        const tagInfo = getTagInfo(data.tag);
+        const itemName = tagInfo ? tagInfo.name : null;
+
+        if (itemName) {
+          console.log(`[BROKER MQTT] 📦 Item identificado: ${itemName}`);
+        } else {
+          console.log(`[BROKER MQTT] ⚠️ Tag não cadastrada: ${data.tag}`);
+        }
+
+        // Atualizar status com tag e nome do item (se existir)
         updateStatus({
           sensores: {
             rfid: data.tag,
+            rfidItemName: itemName,
             rfidTimestamp: data.timestamp || Date.now()
           }
         });

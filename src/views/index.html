@@ -56,6 +56,7 @@
         <div class="info-card">
           <h3>Carga Atual (RFID)</h3>
           <p id="rfid-data">Nenhuma</p>
+          <p id="rfid-item-name" class="rfid-item-name"></p>
         </div>
         <div class="info-card">
           <h3>Controles</h3>
@@ -78,10 +79,30 @@
             </button>
           </div>
         </div>
+
+        <div class="info-card">
+          <h3>Gerenciamento de Tags RFID</h3>
+
+          <!-- Formulário de cadastro -->
+          <div class="rfid-form">
+            <input type="text" id="input-tag-id" placeholder="ID da Tag (ex: 91B657A4)" class="rfid-input" />
+            <input type="text" id="input-item-name" placeholder="Nome do Item" class="rfid-input" />
+            <button id="btn-register-tag" class="btn btn-primary btn-small">Cadastrar Tag</button>
+          </div>
+
+          <!-- Lista de tags cadastradas -->
+          <div class="rfid-list-container">
+            <h4>Itens Cadastrados:</h4>
+            <div id="rfid-list" class="rfid-list">
+              <p class="rfid-list-empty">Nenhum item cadastrado</p>
+            </div>
+          </div>
+        </div>
       </aside>
     </main>
 
     <script src="/socket.io/socket.io.js"></script>
     <script src="js/script.js"></script>
+    <script src="js/rfidManager.js"></script>
   </body>
 </html>
