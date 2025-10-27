@@ -8,6 +8,8 @@ let agvStatus = {
 };
 
 export function updateStatus(novoStatus) {
+  console.log("[AGV SERVICE] 📝 Atualizando status com:", novoStatus);
+
   // Merge profundo para preservar campos de sensores não atualizados
   if (novoStatus.sensores) {
     agvStatus.sensores = { ...agvStatus.sensores, ...novoStatus.sensores };
@@ -19,6 +21,8 @@ export function updateStatus(novoStatus) {
     ...novoStatus,
     ultimaAtualizacao: new Date()
   };
+
+  console.log("[AGV SERVICE] ✅ Status atualizado:", agvStatus);
 }
 
 export function getStatusFromAGV() {
