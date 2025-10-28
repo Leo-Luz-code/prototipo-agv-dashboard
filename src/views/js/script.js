@@ -18,6 +18,15 @@ document.addEventListener("DOMContentLoaded", () => {
   const distanceCenterElement = document.getElementById("distance-center");
   const distanceRightElement = document.getElementById("distance-right");
 
+  // Inicializar visualização 3D dos sensores
+  let distance3D = null;
+  if (typeof Distance3DVisualization !== 'undefined') {
+    distance3D = new Distance3DVisualization('distance-3d-canvas');
+    console.log("[APP] 🎯 Visualização 3D dos sensores inicializada");
+  } else {
+    console.warn("[APP] ⚠️ Distance3DVisualization não disponível");
+  }
+
   // Estado persistente da carga atual
   let currentCargoTag = null;
   let currentCargoName = null;
@@ -174,6 +183,15 @@ document.addEventListener("DOMContentLoaded", () => {
       if (distanceRightElement && direita !== undefined && direita !== null) {
         distanceRightElement.textContent = `${parseFloat(direita).toFixed(1)} ${unidade || 'cm'}`;
         console.log(`[Socket.IO] ✅ Direita atualizada: ${direita} ${unidade}`);
+      }
+
+      // Atualiza visualização 3D
+      if (distance3D && typeof distance3D.updateSensorData === 'function') {
+        distance3D.updateSensorData(
+          parseFloat(centro) || 0,
+          parseFloat(direita) || 0,
+          parseFloat(esquerda) || 0
+        );
       }
 
       console.log(`[Socket.IO] ✅ Distâncias atualizadas - Esq: ${esquerda} | Centro: ${centro} | Dir: ${direita} ${unidade}`);

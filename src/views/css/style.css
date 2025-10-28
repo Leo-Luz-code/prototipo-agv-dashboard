@@ -824,3 +824,51 @@ h2 {
   min-width: 60px;
   text-align: right;
 }
+
+/* ========== VISUALIZAÇÃO 3D DOS SENSORES ========== */
+
+.distance-3d-container {
+  width: 100%;
+  height: 350px;
+  background: linear-gradient(135deg, rgba(10, 14, 20, 0.8) 0%, rgba(0, 0, 0, 0.9) 100%);
+  border-radius: 8px;
+  overflow: hidden;
+  position: relative;
+  border: 2px solid var(--border-color);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+#distance-3d-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.distance-3d-legend {
+  display: flex;
+  justify-content: space-around;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  padding: 0.75rem;
+  background-color: rgba(255, 255, 255, 0.05);
+  border-radius: 5px;
+  border: 1px solid var(--border-color);
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  color: var(--text-color);
+  font-weight: 500;
+}
+
+.legend-color {
+  width: 16px;
+  height: 16px;
+  border-radius: 3px;
+  display: inline-block;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
