@@ -72,6 +72,37 @@ client.on("message", (topic, message) => {
       });
     }
 
+    // Handler para dados de distância dos sensores VL53L0X
+    if (topic === "agv/distance") {
+      console.log(`[MQTT CONFIG] 📏 DISTÂNCIA RECEBIDA:`, data);
+      console.log(`[MQTT CONFIG]   Esquerda: ${data.left} cm`);
+      console.log(`[MQTT CONFIG]   Centro: ${data.center} cm`);
+      console.log(`[MQTT CONFIG]   Direita: ${data.right} cm`);
+
+      // Atualiza os dados de distância no estado
+      updateStatus({
+        sensores: {
+          distancia: {
+            esquerda: data.left,
+            centro: data.center,
+            direita: data.right,
+            timestamp: data.timestamp || Date.now(),
+            unidade: data.unit || "cm"
+          }
+        }
+      });
+
+      // Envia dados de distância para o frontend
+      const fullStatus = getStatusFromAGV();
+      import("../services/socketService.js").then(({ broadcast }) => {
+        broadcast("agv/distance", {
+          distancia: fullStatus.sensores.distancia,
+          ultimaAtualizacao: fullStatus.ultimaAtualizacao
+        });
+        console.log(`[MQTT CONFIG] ✅ Dados de distância transmitidos!`);
+      });
+    }
+
   } catch (e) {
     console.error("[MQTT CONFIG] ❌ Erro:", e);
   }
@@ -81,7 +112,7 @@ client.on("connect", () => {
   console.log("[MQTT CLIENT] ✅ Conectado ao broker local");
 
   // Subscrever aos tópicos
-  client.subscribe(["agv/status", "agv/rfid"], { qos: 1 }, (err, granted) => {
+  client.subscribe(["agv/status", "agv/rfid", "agv/distance"], { qos: 1 }, (err, granted) => {
     if (err) {
       console.error("[MQTT CLIENT] ❌ Erro ao subscrever:", err);
     } else {

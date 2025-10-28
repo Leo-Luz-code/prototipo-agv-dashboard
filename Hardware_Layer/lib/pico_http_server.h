@@ -5,7 +5,6 @@
 #include "pico/cyw43_arch.h"
 #include "lwip/err.h"
 #include "lwip/tcp.h"
-#include "lwip/netif.h"
 
 // Enumeração para o tipo de conteúdo da resposta HTTP
 typedef enum

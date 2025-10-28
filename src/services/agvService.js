@@ -2,7 +2,14 @@ let agvStatus = {
   posicao: "Branco",
   bateria: 100,
   sensores: {
-    rfid: "Nenhuma"
+    rfid: "Nenhuma",
+    distancia: {
+      esquerda: 0,
+      centro: 0,
+      direita: 0,
+      timestamp: null,
+      unidade: "cm"
+    }
   },
   ultimaAtualizacao: new Date(),
 };

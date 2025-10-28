@@ -14,6 +14,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const agvCargoElement = document.getElementById("agv-cargo");
   const agvCargoNameElement = document.getElementById("agv-cargo-name");
   const btnClearCargo = document.getElementById("btn-clear-cargo");
+  const distanceLeftElement = document.getElementById("distance-left");
+  const distanceCenterElement = document.getElementById("distance-center");
+  const distanceRightElement = document.getElementById("distance-right");
 
   // Estado persistente da carga atual
   let currentCargoTag = null;
@@ -148,6 +151,28 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     console.log("[Socket.IO] ⚠️ IMPORTANTE: Posição do AGV NÃO foi alterada!");
+  });
+
+  // Ouve pelo evento 'agv/distance' para atualizar sensores de distância
+  socket.on("agv/distance", (data) => {
+    console.log("[Socket.IO] 📏 Dados de distância recebidos:", data);
+
+    if (data.distancia) {
+      const { esquerda, centro, direita, unidade } = data.distancia;
+
+      // Atualiza elementos visuais de distância
+      if (distanceLeftElement) {
+        distanceLeftElement.textContent = `${esquerda.toFixed(1)} ${unidade}`;
+      }
+      if (distanceCenterElement) {
+        distanceCenterElement.textContent = `${centro.toFixed(1)} ${unidade}`;
+      }
+      if (distanceRightElement) {
+        distanceRightElement.textContent = `${direita.toFixed(1)} ${unidade}`;
+      }
+
+      console.log(`[Socket.IO] ✅ Distâncias atualizadas - Esq: ${esquerda} | Centro: ${centro} | Dir: ${direita} ${unidade}`);
+    }
   });
 
   console.log("[Socket.IO] 📝 Event listeners registrados!");

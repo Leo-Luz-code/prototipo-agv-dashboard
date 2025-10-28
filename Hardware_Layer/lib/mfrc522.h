@@ -23,6 +23,9 @@
 #include "pico/stdlib.h"
 #include "hardware/spi.h"
 
+// Incluir configurações do projeto
+#include "../config.h"
+
 /*******************************************************************************
  * Configuration Constants
  ******************************************************************************/
@@ -36,13 +39,13 @@
 // Maximum number of ADT object allocations
 #define MFRC_MAX_INSTANCES 2
 
-// GPIO pin assignments for MFRC522
-#define RESET_PIN 0               // GP0 - Reset
+// GPIO pin assignments for MFRC522 (agora vindo do config.h)
+#define RESET_PIN PIN_RST
 
-static const uint cs_pin = 5;     // GP5 - Chip Select (SDA)
-static const uint sck_pin = 2;    // GP2 - SPI Clock
-static const uint mosi_pin = 3;   // GP3 - SPI Master Out Slave In
-static const uint miso_pin = 4;   // GP4 - SPI Master In Slave Out
+static const uint cs_pin = PIN_CS;
+static const uint sck_pin = PIN_SCK;
+static const uint mosi_pin = PIN_MOSI;
+static const uint miso_pin = PIN_MISO;
 
 // Size of the MFRC522 FIFO buffer
 static const uint8_t FIFO_SIZE = 64;
