@@ -46,8 +46,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Ouve pelo evento 'agv/status' que o backend está transmitindo
   socket.on("agv/status", (status) => {
-    console.log("[Socket.IO] 📩 Status recebido em tempo real:", status);
-    console.log("[Socket.IO] 🏷️  RFID no status:", status.sensores);
+    console.log("[Socket.IO] 📩 Status COMPLETO recebido:", status);
+    console.log("[Socket.IO] 📍 Posição no status:", status.posicao);
+    console.log("[Socket.IO] 🚦 isMoving atual:", isMoving);
 
     // 'status' é o objeto completo { posicao, bateria, sensores, ... }
 
@@ -66,20 +67,90 @@ document.addEventListener("DOMContentLoaded", () => {
       rfidItemName: rfidItemName,
     });
 
-    // 2. Atualizar a posição visual do AGV
+    // 2. Atualizar a posição visual do AGV APENAS se não estiver em movimento
     const dropdownInicio = document.getElementById("select-inicio");
     if (
       !isMoving &&
       status.posicao &&
       dropdownInicio.value !== status.posicao
     ) {
-      console.log(`Sincronizando posição (WebSocket): ${status.posicao}`);
+      console.log(`[Socket.IO] 🔄 Sincronizando posição: ${dropdownInicio.value} -> ${status.posicao}`);
       setAgvPosition(status.posicao, "Ocioso (Sincronizado)");
       dropdownInicio.value = status.posicao;
+    } else {
+      console.log(`[Socket.IO] ⏸️ Sincronização de posição bloqueada (isMoving=${isMoving}, posicao=${status.posicao})`);
     }
   });
 
-  console.log("[Socket.IO] 📝 Event listener 'agv/status' registrado!");
+  // Ouve pelo evento 'agv/rfid/update' apenas para atualizar sensores RFID
+  // SEM afetar a posição do AGV
+  socket.on("agv/rfid/update", (update) => {
+    console.log("[Socket.IO] 📡 Update de RFID recebido (NÃO afeta posição):", update);
+
+    const rfidValue = update.sensores?.rfid || "Nenhuma";
+    const rfidItemName = update.sensores?.rfidItemName || null;
+    console.log(`[Socket.IO] 🏷️ Tag RFID: ${rfidValue}`);
+    if (rfidItemName) {
+      console.log(`[Socket.IO] 📦 Item: ${rfidItemName}`);
+    }
+
+    // Verifica se é uma nova tag válida E diferente da atual
+    if (rfidValue && rfidValue !== "Nenhuma" && rfidValue !== currentCargoTag) {
+      // Nova tag detectada - atualiza SOMENTE se for diferente
+      currentCargoTag = rfidValue;
+      currentCargoName = rfidItemName;
+
+      console.log(`[Socket.IO] ✅ Nova tag carregada no AGV: ${currentCargoTag}`);
+
+      // Atualiza APENAS os elementos visuais do RFID, SEM tocar na posição
+      if (rfidDataElement) {
+        rfidDataElement.textContent = currentCargoTag;
+        rfidDataElement.style.transition = "all 0.3s ease";
+        rfidDataElement.style.transform = "scale(1.1)";
+        rfidDataElement.style.color = "#4CAF50";
+        setTimeout(() => {
+          rfidDataElement.style.transform = "scale(1)";
+        }, 300);
+      }
+
+      // Atualiza o nome do item
+      if (rfidItemNameElement) {
+        rfidItemNameElement.classList.remove("item-found", "item-not-found");
+        if (currentCargoName) {
+          rfidItemNameElement.textContent = `📦 ${currentCargoName}`;
+          rfidItemNameElement.classList.add("item-found");
+        } else {
+          rfidItemNameElement.textContent = "⚠️ Tag não cadastrada";
+          rfidItemNameElement.classList.add("item-not-found");
+        }
+      }
+
+      // Atualiza o badge de carga do AGV
+      if (agvCargoElement && agvCargoNameElement) {
+        agvCargoElement.classList.remove("updated", "empty", "unregistered");
+        if (currentCargoName) {
+          agvCargoNameElement.textContent = currentCargoName;
+          agvCargoElement.classList.add("updated");
+        } else {
+          agvCargoNameElement.textContent = `Tag: ${currentCargoTag.substring(0, 8)}...`;
+          agvCargoElement.classList.add("unregistered");
+          agvCargoElement.classList.add("updated");
+        }
+        setTimeout(() => {
+          agvCargoElement.classList.remove("updated");
+        }, 500);
+      }
+
+      // Atualiza estado do botão "Sem Carga"
+      if (btnClearCargo) {
+        btnClearCargo.disabled = false;
+      }
+    }
+
+    console.log("[Socket.IO] ⚠️ IMPORTANTE: Posição do AGV NÃO foi alterada!");
+  });
+
+  console.log("[Socket.IO] 📝 Event listeners registrados!");
 
   // Mapeamento de Posições (coordenadas em % [x, y])
   const locations = {

@@ -1,5 +1,6 @@
 import { connect } from "mqtt";
 import { updateStatus, getStatusFromAGV } from "../services/agvService.js";
+import { getTagInfo } from "../services/rfidService.js";
 
 const mqttOptions = {
   host: "localhost",
@@ -25,20 +26,38 @@ client.on("message", (topic, message) => {
     if (topic === "agv/rfid") {
       console.log(`[MQTT CONFIG] 🏷️ RFID DETECTADO: ${data.tag}`);
 
-      // Atualiza o status
+      // Busca informações da tag no banco de dados
+      const tagInfo = getTagInfo(data.tag);
+      const itemName = tagInfo ? tagInfo.name : null;
+
+      if (itemName) {
+        console.log(`[MQTT CONFIG] 📦 Item identificado: ${itemName}`);
+      } else {
+        console.log(`[MQTT CONFIG] ⚠️ Tag não cadastrada no sistema`);
+      }
+
+      // Atualiza APENAS os sensores, sem afetar a posição
       updateStatus({
         sensores: {
           rfid: data.tag,
+          rfidItemName: itemName,
           rfidTimestamp: data.timestamp || Date.now()
         }
       });
 
+      // Envia apenas os dados dos sensores, não todo o status
+      // Isso evita que a posição seja resetada no frontend
       const fullStatus = getStatusFromAGV();
-      console.log(`[MQTT CONFIG] 📡 Status:`, fullStatus);
+      const rfidUpdate = {
+        sensores: fullStatus.sensores,
+        bateria: fullStatus.bateria,
+        ultimaAtualizacao: fullStatus.ultimaAtualizacao
+      };
+      console.log(`[MQTT CONFIG] 📡 Enviando update de RFID:`, rfidUpdate);
 
       // Importa dinamicamente para evitar circular dependency
       import("../services/socketService.js").then(({ broadcast }) => {
-        broadcast("agv/status", fullStatus);
+        broadcast("agv/rfid/update", rfidUpdate);
         console.log(`[MQTT CONFIG] ✅ Tag transmitida!`);
       });
     }
