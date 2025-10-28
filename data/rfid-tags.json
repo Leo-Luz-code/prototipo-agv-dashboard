@@ -2,11 +2,16 @@
   "91B657A4": {
     "name": "Remédio",
     "createdAt": 1761590375370,
-    "updatedAt": 1761590375370
+    "updatedAt": 1761606967313
   },
   "E4ACB8E1": {
     "name": "Mercadoria",
     "createdAt": 1761590643843,
     "updatedAt": 1761590643843
+  },
+  "145792E1": {
+    "name": "Cadeira",
+    "createdAt": 1761606886181,
+    "updatedAt": 1761606886181
   }
 }
