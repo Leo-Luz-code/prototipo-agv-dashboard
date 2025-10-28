@@ -157,21 +157,28 @@ document.addEventListener("DOMContentLoaded", () => {
   socket.on("agv/distance", (data) => {
     console.log("[Socket.IO] 📏 Dados de distância recebidos:", data);
 
-    if (data.distancia) {
+    if (data && data.distancia) {
       const { esquerda, centro, direita, unidade } = data.distancia;
 
-      // Atualiza elementos visuais de distância
-      if (distanceLeftElement) {
-        distanceLeftElement.textContent = `${esquerda.toFixed(1)} ${unidade}`;
+      console.log(`[Socket.IO] 📏 Valores recebidos - Esq: ${esquerda} | Centro: ${centro} | Dir: ${direita}`);
+
+      // Atualiza elementos visuais de distância com validação
+      if (distanceLeftElement && esquerda !== undefined && esquerda !== null) {
+        distanceLeftElement.textContent = `${parseFloat(esquerda).toFixed(1)} ${unidade || 'cm'}`;
+        console.log(`[Socket.IO] ✅ Esquerda atualizada: ${esquerda} ${unidade}`);
       }
-      if (distanceCenterElement) {
-        distanceCenterElement.textContent = `${centro.toFixed(1)} ${unidade}`;
+      if (distanceCenterElement && centro !== undefined && centro !== null) {
+        distanceCenterElement.textContent = `${parseFloat(centro).toFixed(1)} ${unidade || 'cm'}`;
+        console.log(`[Socket.IO] ✅ Centro atualizado: ${centro} ${unidade}`);
       }
-      if (distanceRightElement) {
-        distanceRightElement.textContent = `${direita.toFixed(1)} ${unidade}`;
+      if (distanceRightElement && direita !== undefined && direita !== null) {
+        distanceRightElement.textContent = `${parseFloat(direita).toFixed(1)} ${unidade || 'cm'}`;
+        console.log(`[Socket.IO] ✅ Direita atualizada: ${direita} ${unidade}`);
       }
 
       console.log(`[Socket.IO] ✅ Distâncias atualizadas - Esq: ${esquerda} | Centro: ${centro} | Dir: ${direita} ${unidade}`);
+    } else {
+      console.warn("[Socket.IO] ⚠️ Dados de distância inválidos ou ausentes:", data);
     }
   });
 

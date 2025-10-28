@@ -9,10 +9,30 @@ const port = 1883;
 // Criar servidor TCP para o broker MQTT
 const server = createServer(broker.handle);
 
-// Inicializar broker
+// Inicializar broker com tratamento de erro
 server.listen(port, () => {
   console.log(`[BROKER MQTT] 🚀 Broker iniciado na porta ${port}`);
   console.log(`[BROKER MQTT] ✅ Pronto para receber conexões`);
+});
+
+// Tratamento de erro de porta em uso
+server.on('error', (err) => {
+  if (err.code === 'EADDRINUSE') {
+    console.error(`\n❌ ERRO: A porta ${port} já está em uso!`);
+    console.error(`\n📋 Possíveis causas:`);
+    console.error(`   1. Já existe uma instância do servidor rodando`);
+    console.error(`   2. O Mosquitto ou outro broker MQTT está ativo`);
+    console.error(`   3. Uma instância anterior não foi encerrada corretamente`);
+    console.error(`\n🔧 Soluções:`);
+    console.error(`   • Windows: Abra o Gerenciador de Tarefas e encerre processos "node.exe"`);
+    console.error(`   • Ou execute: npx kill-port 1883`);
+    console.error(`   • Ou execute: npm run kill-port`);
+    console.error(`\nEncerrando o servidor...\n`);
+    process.exit(1);
+  } else {
+    console.error('[BROKER MQTT] ❌ Erro ao iniciar servidor:', err);
+    process.exit(1);
+  }
 });
 
 // Log quando um cliente conecta
@@ -91,6 +111,52 @@ broker.on('publish', async (packet, client) => {
         broadcast('agv/status', fullStatus);
       } catch (e) {
         console.error('[BROKER MQTT] ❌ Erro ao processar status:', e);
+      }
+    }
+
+    // Processar dados de distância dos sensores VL53L0X
+    if (topic === 'agv/distance') {
+      try {
+        const data = JSON.parse(payload);
+        console.log(`[BROKER MQTT] 📏 DISTÂNCIA RECEBIDA:`, data);
+        console.log(`[BROKER MQTT]   Left: ${data.left} cm`);
+        console.log(`[BROKER MQTT]   Center: ${data.center} cm`);
+        console.log(`[BROKER MQTT]   Right: ${data.right} cm`);
+
+        // Converte para números e garante valores válidos
+        const esquerda = parseFloat(data.left) || 0;
+        const centro = parseFloat(data.center) || 0;
+        const direita = parseFloat(data.right) || 0;
+
+        console.log(`[BROKER MQTT]   Convertidos - Esq: ${esquerda} | Centro: ${centro} | Dir: ${direita}`);
+
+        // Atualiza os dados de distância no estado
+        updateStatus({
+          sensores: {
+            distancia: {
+              esquerda: esquerda,
+              centro: centro,
+              direita: direita,
+              timestamp: data.timestamp || Date.now(),
+              unidade: data.unit || "cm"
+            }
+          }
+        });
+
+        // Envia dados de distância para o frontend
+        const fullStatus = getStatusFromAGV();
+        const distanceData = {
+          distancia: fullStatus.sensores.distancia,
+          ultimaAtualizacao: fullStatus.ultimaAtualizacao
+        };
+
+        console.log(`[BROKER MQTT] 📡 Enviando para frontend:`, JSON.stringify(distanceData));
+
+        const { broadcast } = await import('../services/socketService.js');
+        broadcast('agv/distance', distanceData);
+        console.log(`[BROKER MQTT] ✅ Dados de distância transmitidos via Socket.IO!`);
+      } catch (e) {
+        console.error('[BROKER MQTT] ❌ Erro ao processar distância:', e);
       }
     }
   }

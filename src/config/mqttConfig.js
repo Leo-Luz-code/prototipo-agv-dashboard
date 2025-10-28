@@ -75,17 +75,25 @@ client.on("message", (topic, message) => {
     // Handler para dados de distância dos sensores VL53L0X
     if (topic === "agv/distance") {
       console.log(`[MQTT CONFIG] 📏 DISTÂNCIA RECEBIDA:`, data);
-      console.log(`[MQTT CONFIG]   Esquerda: ${data.left} cm`);
-      console.log(`[MQTT CONFIG]   Centro: ${data.center} cm`);
-      console.log(`[MQTT CONFIG]   Direita: ${data.right} cm`);
+      console.log(`[MQTT CONFIG]   Raw data:`, JSON.stringify(data));
+      console.log(`[MQTT CONFIG]   Left (${typeof data.left}): ${data.left} cm`);
+      console.log(`[MQTT CONFIG]   Center (${typeof data.center}): ${data.center} cm`);
+      console.log(`[MQTT CONFIG]   Right (${typeof data.right}): ${data.right} cm`);
+
+      // Converte explicitamente para números e garante valores válidos
+      const esquerda = parseFloat(data.left) || 0;
+      const centro = parseFloat(data.center) || 0;
+      const direita = parseFloat(data.right) || 0;
+
+      console.log(`[MQTT CONFIG]   Convertidos - Esq: ${esquerda} | Centro: ${centro} | Dir: ${direita}`);
 
       // Atualiza os dados de distância no estado
       updateStatus({
         sensores: {
           distancia: {
-            esquerda: data.left,
-            centro: data.center,
-            direita: data.right,
+            esquerda: esquerda,
+            centro: centro,
+            direita: direita,
             timestamp: data.timestamp || Date.now(),
             unidade: data.unit || "cm"
           }
@@ -94,12 +102,16 @@ client.on("message", (topic, message) => {
 
       // Envia dados de distância para o frontend
       const fullStatus = getStatusFromAGV();
+      const distanceData = {
+        distancia: fullStatus.sensores.distancia,
+        ultimaAtualizacao: fullStatus.ultimaAtualizacao
+      };
+
+      console.log(`[MQTT CONFIG] 📡 Enviando para frontend:`, JSON.stringify(distanceData));
+
       import("../services/socketService.js").then(({ broadcast }) => {
-        broadcast("agv/distance", {
-          distancia: fullStatus.sensores.distancia,
-          ultimaAtualizacao: fullStatus.ultimaAtualizacao
-        });
-        console.log(`[MQTT CONFIG] ✅ Dados de distância transmitidos!`);
+        broadcast("agv/distance", distanceData);
+        console.log(`[MQTT CONFIG] ✅ Dados de distância transmitidos via Socket.IO!`);
       });
     }
 
