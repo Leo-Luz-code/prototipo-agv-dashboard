@@ -1,0 +1,5 @@
+build
+.vscode/
+pico_sdk_import.cmake
+ROADMAP.md
+senha.txt

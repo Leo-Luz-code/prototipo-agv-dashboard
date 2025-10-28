@@ -1,5 +1,6 @@
 import { calcularRota } from "../services/dijkstraService.js";
 import { publicarRota } from "./mqttController.js";
+import { updateStatus } from "../services/agvService.js";
 
 // --- Estado do Robô ---
 // O robô sempre começa em "Branco".
@@ -45,6 +46,10 @@ export function generateRoute(req, res) {
     noAtual = caminho[caminho.length - 1];
     // O novo 'anterior' é o penúltimo nó
     noAnterior = caminho[caminho.length - 2];
+
+    // IMPORTANTE: Atualiza a posição no agvService para manter sincronizado
+    updateStatus({ posicao: noAtual });
+    console.log(`[ROUTE CONTROLLER] 📍 Posição atualizada para: ${noAtual}`);
   }
   // Se caminho.length <= 1, significa que o destino era o próprio início,
   // então o estado (noAtual e noAnterior) não muda.

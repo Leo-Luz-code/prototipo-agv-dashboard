@@ -35,8 +35,73 @@
           <div class="zone" id="Azul">Ponto Azul</div>
 
           <div id="agv" class="agv-marker">
+            <div id="agv-cargo" class="agv-cargo-badge">
+              <span class="agv-cargo-icon">📦</span>
+              <span id="agv-cargo-name" class="agv-cargo-name">Sem carga</span>
+            </div>
             <div class="agv-icon"></div>
             <span class="agv-label">AGV-01</span>
+          </div>
+        </div>
+
+        <!-- CARD CONSOLIDADO DE RFID (movido da barra lateral) -->
+        <div class="info-card rfid-main-card">
+          <h3>📡 Sistema RFID</h3>
+
+          <!-- Seção 1: Leitura Atual -->
+          <div class="rfid-section">
+            <div class="rfid-section-header">
+              <span class="rfid-section-icon">🏷️</span>
+              <h4>Leitura Atual</h4>
+            </div>
+            <div class="rfid-current-reading">
+              <div class="rfid-reading-item">
+                <span class="rfid-reading-label">Tag ID:</span>
+                <div class="rfid-reading-value-wrapper">
+                  <p id="rfid-data" class="rfid-reading-value">Nenhuma</p>
+                  <button id="btn-copy-tag-to-register" class="btn-copy-tag" title="Copiar para cadastro">→</button>
+                </div>
+              </div>
+              <div class="rfid-reading-item">
+                <span class="rfid-reading-label">Item:</span>
+                <p id="rfid-item-name" class="rfid-reading-value rfid-item-name-display">Aguardando leitura...</p>
+              </div>
+              <div class="rfid-reading-item">
+                <button id="btn-clear-cargo" class="btn btn-clear-cargo">
+                  🚫 Marcar como Sem Carga
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="rfid-divider"></div>
+
+          <!-- Seção 2: Cadastro de Tags -->
+          <div class="rfid-section">
+            <div class="rfid-section-header">
+              <span class="rfid-section-icon">➕</span>
+              <h4>Cadastrar Nova Tag</h4>
+            </div>
+            <div class="rfid-form">
+              <input type="text" id="input-tag-id" placeholder="ID da Tag (ex: 91B657A4)" class="rfid-input" />
+              <input type="text" id="input-item-name" placeholder="Nome do Item" class="rfid-input" />
+              <button id="btn-register-tag" class="btn btn-primary btn-small">📥 Cadastrar Tag</button>
+            </div>
+          </div>
+
+          <div class="rfid-divider"></div>
+
+          <!-- Seção 3: Lista de Tags Cadastradas -->
+          <div class="rfid-section">
+            <div class="rfid-section-header">
+              <span class="rfid-section-icon">📋</span>
+              <h4>Tags Cadastradas</h4>
+            </div>
+            <div class="rfid-list-container">
+              <div id="rfid-list" class="rfid-list">
+                <p class="rfid-list-empty">Nenhum item cadastrado</p>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -52,10 +117,6 @@
             <div id="battery-level" class="battery-level-bar"></div>
           </div>
           <p id="battery-percentage" class="percentage-text">100%</p>
-        </div>
-        <div class="info-card">
-          <h3>Carga Atual (RFID)</h3>
-          <p id="rfid-data">Nenhuma</p>
         </div>
         <div class="info-card">
           <h3>Controles</h3>
@@ -83,5 +144,6 @@
 
     <script src="/socket.io/socket.io.js"></script>
     <script src="js/script.js"></script>
+    <script src="js/rfidManager.js"></script>
   </body>
 </html>
