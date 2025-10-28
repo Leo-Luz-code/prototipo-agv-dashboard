@@ -119,6 +119,47 @@
           <p id="battery-percentage" class="percentage-text">100%</p>
         </div>
         <div class="info-card">
+          <h3>📏 Sensores de Distância</h3>
+          <div class="distance-sensors">
+            <div class="distance-item">
+              <span class="distance-label">⬅️ Esquerda:</span>
+              <span id="distance-left" class="distance-value">-- cm</span>
+            </div>
+            <div class="distance-item">
+              <span class="distance-label">⬆️ Centro:</span>
+              <span id="distance-center" class="distance-value">-- cm</span>
+            </div>
+            <div class="distance-item">
+              <span class="distance-label">➡️ Direita:</span>
+              <span id="distance-right" class="distance-value">-- cm</span>
+            </div>
+          </div>
+        </div>
+        <div class="info-card">
+          <h3>🎯 Visualização 3D - Sensores</h3>
+          <div id="distance-3d-container" class="distance-3d-container">
+            <canvas id="distance-3d-canvas"></canvas>
+          </div>
+          <div class="distance-3d-legend">
+            <div class="legend-item">
+              <span class="legend-color" style="background: #ffff00;"></span>
+              <span>AGV (Seta = Frente)</span>
+            </div>
+            <div class="legend-item">
+              <span class="legend-color" style="background: #ff4444;"></span>
+              <span>🔴 Frontal</span>
+            </div>
+            <div class="legend-item">
+              <span class="legend-color" style="background: #44ff44;"></span>
+              <span>🟢 Direita</span>
+            </div>
+            <div class="legend-item">
+              <span class="legend-color" style="background: #4444ff;"></span>
+              <span>🔵 Esquerda</span>
+            </div>
+          </div>
+        </div>
+        <div class="info-card">
           <h3>Controles</h3>
 
           <div class="route-selection">
@@ -143,6 +184,8 @@
     </main>
 
     <script src="/socket.io/socket.io.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="js/distance3D.js"></script>
     <script src="js/script.js"></script>
     <script src="js/rfidManager.js"></script>
   </body>

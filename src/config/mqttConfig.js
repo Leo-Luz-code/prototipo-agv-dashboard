@@ -72,6 +72,49 @@ client.on("message", (topic, message) => {
       });
     }
 
+    // Handler para dados de distância dos sensores VL53L0X
+    if (topic === "agv/distance") {
+      console.log(`[MQTT CONFIG] 📏 DISTÂNCIA RECEBIDA:`, data);
+      console.log(`[MQTT CONFIG]   Raw data:`, JSON.stringify(data));
+      console.log(`[MQTT CONFIG]   Left (${typeof data.left}): ${data.left} cm`);
+      console.log(`[MQTT CONFIG]   Center (${typeof data.center}): ${data.center} cm`);
+      console.log(`[MQTT CONFIG]   Right (${typeof data.right}): ${data.right} cm`);
+
+      // Converte explicitamente para números e garante valores válidos
+      const esquerda = parseFloat(data.left) || 0;
+      const centro = parseFloat(data.center) || 0;
+      const direita = parseFloat(data.right) || 0;
+
+      console.log(`[MQTT CONFIG]   Convertidos - Esq: ${esquerda} | Centro: ${centro} | Dir: ${direita}`);
+
+      // Atualiza os dados de distância no estado
+      updateStatus({
+        sensores: {
+          distancia: {
+            esquerda: esquerda,
+            centro: centro,
+            direita: direita,
+            timestamp: data.timestamp || Date.now(),
+            unidade: data.unit || "cm"
+          }
+        }
+      });
+
+      // Envia dados de distância para o frontend
+      const fullStatus = getStatusFromAGV();
+      const distanceData = {
+        distancia: fullStatus.sensores.distancia,
+        ultimaAtualizacao: fullStatus.ultimaAtualizacao
+      };
+
+      console.log(`[MQTT CONFIG] 📡 Enviando para frontend:`, JSON.stringify(distanceData));
+
+      import("../services/socketService.js").then(({ broadcast }) => {
+        broadcast("agv/distance", distanceData);
+        console.log(`[MQTT CONFIG] ✅ Dados de distância transmitidos via Socket.IO!`);
+      });
+    }
+
   } catch (e) {
     console.error("[MQTT CONFIG] ❌ Erro:", e);
   }
@@ -81,7 +124,7 @@ client.on("connect", () => {
   console.log("[MQTT CLIENT] ✅ Conectado ao broker local");
 
   // Subscrever aos tópicos
-  client.subscribe(["agv/status", "agv/rfid"], { qos: 1 }, (err, granted) => {
+  client.subscribe(["agv/status", "agv/rfid", "agv/distance"], { qos: 1 }, (err, granted) => {
     if (err) {
       console.error("[MQTT CLIENT] ❌ Erro ao subscrever:", err);
     } else {

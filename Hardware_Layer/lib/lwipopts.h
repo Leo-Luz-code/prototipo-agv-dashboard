@@ -23,7 +23,6 @@
 #define MEMP_NUM_TCP_SEG 64
 #define MEMP_NUM_ARP_QUEUE 10
 #define PBUF_POOL_SIZE 48 // Aumentado de 32 para 48
-#define MEMP_NUM_SYS_TIMEOUT 16 // Pool de timeouts para MQTT e reconexões
 #define LWIP_ARP 1
 #define LWIP_ETHERNET 1
 #define LWIP_ICMP 1
@@ -51,6 +50,22 @@
 #define LWIP_NETIF_TX_SINGLE_PBUF 1
 #define DHCP_DOES_ARP_CHECK 0
 #define LWIP_DHCP_DOES_ACD_CHECK 0
+
+// ========== CONFIGURAÇÕES DE POOLS DE MEMÓRIA ==========
+// Pools críticos para evitar esgotamento de recursos
+#define MEMP_NUM_SYS_TIMEOUT 16        // Número de timeouts do sistema (padrão: 5)
+#define MEMP_NUM_NETBUF 8              // Buffers de rede
+#define MEMP_NUM_NETCONN 8             // Conexões de rede
+#define MEMP_NUM_TCP_PCB 8             // Blocos de controle TCP
+#define MEMP_NUM_TCP_PCB_LISTEN 4      // Conexões TCP em escuta
+#define MEMP_NUM_UDP_PCB 8             // Blocos de controle UDP
+#define MEMP_NUM_PBUF 32               // Buffers de pacotes
+#define MEMP_NUM_TCPIP_MSG_INPKT 16    // Mensagens de entrada TCP/IP
+
+// Configurações MQTT específicas
+#define MQTT_OUTPUT_RINGBUF_SIZE 512   // Buffer de saída MQTT
+#define MQTT_VAR_HEADER_BUFFER_LEN 128 // Buffer de cabeçalho MQTT
+#define MQTT_REQ_MAX_IN_FLIGHT 4       // Máximo de requisições MQTT simultâneas
 
 #ifndef NDEBUG
 #define LWIP_DEBUG 1

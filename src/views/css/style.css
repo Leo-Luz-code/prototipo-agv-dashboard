@@ -789,3 +789,126 @@ h2 {
     height: 400px;
   }
 }
+
+/* === SENSORES DE DISTÂNCIA === */
+.distance-sensors {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.distance-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem;
+  background-color: rgba(255, 255, 255, 0.05);
+  border-radius: 5px;
+  transition: background-color 0.3s ease;
+}
+
+.distance-item:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+.distance-label {
+  font-size: 0.9rem;
+  color: var(--text-muted-color);
+  font-weight: 400;
+}
+
+.distance-value {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--success-color);
+  min-width: 60px;
+  text-align: right;
+  transition: all 0.3s ease;
+}
+
+/* Estilos de alerta de perigo para distâncias (<= 20cm) */
+.distance-value.distance-danger {
+  color: var(--danger-color) !important;
+  font-weight: 900;
+  animation: dangerPulse 1s ease-in-out infinite;
+  text-shadow: 0 0 8px rgba(220, 53, 69, 0.8);
+}
+
+.distance-value.distance-safe {
+  color: var(--success-color);
+}
+
+@keyframes dangerPulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.8;
+  }
+}
+
+/* Destaque no container quando há perigo */
+.distance-item:has(.distance-danger) {
+  background-color: rgba(220, 53, 69, 0.15);
+  border-left: 3px solid var(--danger-color);
+  animation: warningBlink 1.5s ease-in-out infinite;
+}
+
+@keyframes warningBlink {
+  0%, 100% {
+    background-color: rgba(220, 53, 69, 0.15);
+  }
+  50% {
+    background-color: rgba(220, 53, 69, 0.25);
+  }
+}
+
+/* ========== VISUALIZAÇÃO 3D DOS SENSORES ========== */
+
+.distance-3d-container {
+  width: 100%;
+  height: 350px;
+  background: linear-gradient(135deg, rgba(10, 14, 20, 0.8) 0%, rgba(0, 0, 0, 0.9) 100%);
+  border-radius: 8px;
+  overflow: hidden;
+  position: relative;
+  border: 2px solid var(--border-color);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+#distance-3d-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.distance-3d-legend {
+  display: flex;
+  justify-content: space-around;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  padding: 0.75rem;
+  background-color: rgba(255, 255, 255, 0.05);
+  border-radius: 5px;
+  border: 1px solid var(--border-color);
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  color: var(--text-color);
+  font-weight: 500;
+}
+
+.legend-color {
+  width: 16px;
+  height: 16px;
+  border-radius: 3px;
+  display: inline-block;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
