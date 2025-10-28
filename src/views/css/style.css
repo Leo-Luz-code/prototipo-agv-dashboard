@@ -823,6 +823,46 @@ h2 {
   color: var(--success-color);
   min-width: 60px;
   text-align: right;
+  transition: all 0.3s ease;
+}
+
+/* Estilos de alerta de perigo para distâncias (<= 20cm) */
+.distance-value.distance-danger {
+  color: var(--danger-color) !important;
+  font-weight: 900;
+  animation: dangerPulse 1s ease-in-out infinite;
+  text-shadow: 0 0 8px rgba(220, 53, 69, 0.8);
+}
+
+.distance-value.distance-safe {
+  color: var(--success-color);
+}
+
+@keyframes dangerPulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.8;
+  }
+}
+
+/* Destaque no container quando há perigo */
+.distance-item:has(.distance-danger) {
+  background-color: rgba(220, 53, 69, 0.15);
+  border-left: 3px solid var(--danger-color);
+  animation: warningBlink 1.5s ease-in-out infinite;
+}
+
+@keyframes warningBlink {
+  0%, 100% {
+    background-color: rgba(220, 53, 69, 0.15);
+  }
+  50% {
+    background-color: rgba(220, 53, 69, 0.25);
+  }
 }
 
 /* ========== VISUALIZAÇÃO 3D DOS SENSORES ========== */

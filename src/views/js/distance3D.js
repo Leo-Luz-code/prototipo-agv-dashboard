@@ -169,6 +169,44 @@ class Distance3DVisualization {
 
     // SEM rotação automática
     this.autoRotate = false;
+
+    // ========== CRIAR TEXTO DE PERIGO ==========
+    this.createDangerText();
+  }
+
+  createDangerText() {
+    // Criar sprite de texto "PERIGO"
+    const canvas = document.createElement('canvas');
+    const context = canvas.getContext('2d');
+    canvas.width = 512;
+    canvas.height = 128;
+
+    // Fundo vermelho semi-transparente
+    context.fillStyle = 'rgba(220, 53, 69, 0.9)';
+    context.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Borda preta
+    context.strokeStyle = '#000000';
+    context.lineWidth = 8;
+    context.strokeRect(0, 0, canvas.width, canvas.height);
+
+    // Texto "PERIGO" em branco
+    context.fillStyle = '#ffffff';
+    context.font = 'Bold 80px Arial';
+    context.textAlign = 'center';
+    context.textBaseline = 'middle';
+    context.fillText('⚠️ PERIGO ⚠️', canvas.width / 2, canvas.height / 2);
+
+    const texture = new THREE.CanvasTexture(canvas);
+    const spriteMaterial = new THREE.SpriteMaterial({
+      map: texture,
+      transparent: true
+    });
+    this.dangerSprite = new THREE.Sprite(spriteMaterial);
+    this.dangerSprite.position.set(0, 3, 2);
+    this.dangerSprite.scale.set(6, 1.5, 1);
+    this.dangerSprite.visible = false; // Inicialmente invisível
+    this.scene.add(this.dangerSprite);
   }
 
   createDistanceCircles() {
@@ -190,7 +228,7 @@ class Distance3DVisualization {
     });
   }
 
-  updateSensorData(center, right, left) {
+  updateSensorData(center, right, left, hasDanger = false) {
     this.sensorData.center = center || 0;
     this.sensorData.right = right || 0;
     this.sensorData.left = left || 0;
@@ -199,6 +237,17 @@ class Distance3DVisualization {
     const centerDist = Math.min(this.sensorData.center * this.scale, this.maxDistance * this.scale);
     const rightDist = Math.min(this.sensorData.right * this.scale, this.maxDistance * this.scale);
     const leftDist = Math.min(this.sensorData.left * this.scale, this.maxDistance * this.scale);
+
+    // ========== MOSTRAR/OCULTAR ALERTA DE PERIGO ==========
+    if (this.dangerSprite) {
+      this.dangerSprite.visible = hasDanger;
+
+      // Fazer o texto piscar quando há perigo
+      if (hasDanger) {
+        const pulseScale = 1 + Math.sin(Date.now() * 0.005) * 0.1;
+        this.dangerSprite.scale.set(6 * pulseScale, 1.5 * pulseScale, 1);
+      }
+    }
 
     // ========== ATUALIZAR SENSOR FRONTAL (CENTRO) ==========
     // Posicionar raio/beam
