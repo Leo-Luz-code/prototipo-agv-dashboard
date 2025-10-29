@@ -20,8 +20,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Inicializar visualização 3D dos sensores
   let distance3D = null;
-  if (typeof Distance3DVisualization !== 'undefined') {
-    distance3D = new Distance3DVisualization('distance-3d-canvas');
+  if (typeof Distance3DVisualization !== "undefined") {
+    distance3D = new Distance3DVisualization("distance-3d-canvas");
     console.log("[APP] 🎯 Visualização 3D dos sensores inicializada");
   } else {
     console.warn("[APP] ⚠️ Distance3DVisualization não disponível");
@@ -45,11 +45,72 @@ document.addEventListener("DOMContentLoaded", () => {
   const btnReturn = document.getElementById("btn-return");
   const btnEmergencyStop = document.getElementById("btn-emergency-stop");
 
+  // Drawer / sidebar references
+  const drawerToggle = document.getElementById("drawer-toggle");
+  const leftDrawer = document.getElementById("left-drawer");
+  const drawerClose = document.getElementById("drawer-close");
+  const drawerOverlay = document.getElementById("drawer-overlay");
+  const drawerLinkSensors = document.getElementById("drawer-link-sensors");
+  const drawerLinkRfid = document.getElementById("drawer-link-rfid");
+
   // Conexão estabelecida
   socket.on("connect", () => {
     console.log("[Socket.IO] ✅ CONECTADO ao servidor!");
     console.log("[Socket.IO] 🔑 Socket ID:", socket.id);
   });
+
+  // Drawer behavior
+  function openDrawer() {
+    if (leftDrawer) {
+      leftDrawer.classList.add("open");
+      leftDrawer.setAttribute("aria-hidden", "false");
+    }
+    if (drawerToggle) drawerToggle.setAttribute("aria-expanded", "true");
+    if (drawerOverlay) drawerOverlay.classList.add("visible");
+  }
+
+  function closeDrawer() {
+    if (leftDrawer) {
+      leftDrawer.classList.remove("open");
+      leftDrawer.setAttribute("aria-hidden", "true");
+    }
+    if (drawerToggle) drawerToggle.setAttribute("aria-expanded", "false");
+    if (drawerOverlay) drawerOverlay.classList.remove("visible");
+  }
+
+  function toggleDrawer() {
+    if (leftDrawer && leftDrawer.classList.contains("open")) closeDrawer();
+    else openDrawer();
+  }
+
+  if (drawerToggle) {
+    drawerToggle.addEventListener("click", (e) => {
+      e.preventDefault();
+      toggleDrawer();
+    });
+  }
+  if (drawerClose) drawerClose.addEventListener("click", closeDrawer);
+  if (drawerOverlay) drawerOverlay.addEventListener("click", closeDrawer);
+
+  // Drawer navigation actions
+  if (drawerLinkSensors) {
+    drawerLinkSensors.addEventListener("click", (e) => {
+      e.preventDefault();
+      closeDrawer();
+      const sensorsEl = document.getElementById("sensors-card");
+      if (sensorsEl)
+        sensorsEl.scrollIntoView({ behavior: "smooth", block: "center" });
+    });
+  }
+  if (drawerLinkRfid) {
+    drawerLinkRfid.addEventListener("click", (e) => {
+      e.preventDefault();
+      closeDrawer();
+      const rfidEl = document.getElementById("rfid-card");
+      if (rfidEl)
+        rfidEl.scrollIntoView({ behavior: "smooth", block: "center" });
+    });
+  }
 
   // Desconectado
   socket.on("disconnect", () => {
@@ -86,18 +147,25 @@ document.addEventListener("DOMContentLoaded", () => {
       status.posicao &&
       dropdownInicio.value !== status.posicao
     ) {
-      console.log(`[Socket.IO] 🔄 Sincronizando posição: ${dropdownInicio.value} -> ${status.posicao}`);
+      console.log(
+        `[Socket.IO] 🔄 Sincronizando posição: ${dropdownInicio.value} -> ${status.posicao}`
+      );
       setAgvPosition(status.posicao, "Ocioso (Sincronizado)");
       dropdownInicio.value = status.posicao;
     } else {
-      console.log(`[Socket.IO] ⏸️ Sincronização de posição bloqueada (isMoving=${isMoving}, posicao=${status.posicao})`);
+      console.log(
+        `[Socket.IO] ⏸️ Sincronização de posição bloqueada (isMoving=${isMoving}, posicao=${status.posicao})`
+      );
     }
   });
 
   // Ouve pelo evento 'agv/rfid/update' apenas para atualizar sensores RFID
   // SEM afetar a posição do AGV
   socket.on("agv/rfid/update", (update) => {
-    console.log("[Socket.IO] 📡 Update de RFID recebido (NÃO afeta posição):", update);
+    console.log(
+      "[Socket.IO] 📡 Update de RFID recebido (NÃO afeta posição):",
+      update
+    );
 
     const rfidValue = update.sensores?.rfid || "Nenhuma";
     const rfidItemName = update.sensores?.rfidItemName || null;
@@ -112,7 +180,9 @@ document.addEventListener("DOMContentLoaded", () => {
       currentCargoTag = rfidValue;
       currentCargoName = rfidItemName;
 
-      console.log(`[Socket.IO] ✅ Nova tag carregada no AGV: ${currentCargoTag}`);
+      console.log(
+        `[Socket.IO] ✅ Nova tag carregada no AGV: ${currentCargoTag}`
+      );
 
       // Atualiza APENAS os elementos visuais do RFID, SEM tocar na posição
       if (rfidDataElement) {
@@ -144,7 +214,10 @@ document.addEventListener("DOMContentLoaded", () => {
           agvCargoNameElement.textContent = currentCargoName;
           agvCargoElement.classList.add("updated");
         } else {
-          agvCargoNameElement.textContent = `Tag: ${currentCargoTag.substring(0, 8)}...`;
+          agvCargoNameElement.textContent = `Tag: ${currentCargoTag.substring(
+            0,
+            8
+          )}...`;
           agvCargoElement.classList.add("unregistered");
           agvCargoElement.classList.add("updated");
         }
@@ -169,78 +242,96 @@ document.addEventListener("DOMContentLoaded", () => {
     if (data && data.distancia) {
       const { esquerda, centro, direita, unidade } = data.distancia;
 
-      console.log(`[Socket.IO] 📏 Valores recebidos - Esq: ${esquerda} | Centro: ${centro} | Dir: ${direita}`);
+      console.log(
+        `[Socket.IO] 📏 Valores recebidos - Esq: ${esquerda} | Centro: ${centro} | Dir: ${direita}`
+      );
 
       const DISTANCIA_PERIGO = 20; // 20 cm ou menos = PERIGO
 
       // Atualiza elementos visuais de distância com validação e alerta de perigo
       if (distanceLeftElement && esquerda !== undefined && esquerda !== null) {
-        distanceLeftElement.textContent = `${parseFloat(esquerda).toFixed(1)} ${unidade || 'cm'}`;
+        distanceLeftElement.textContent = `${parseFloat(esquerda).toFixed(1)} ${
+          unidade || "cm"
+        }`;
 
         // Adiciona classe de perigo se <= 20cm
         if (parseFloat(esquerda) <= DISTANCIA_PERIGO) {
-          distanceLeftElement.classList.add('distance-danger');
-          distanceLeftElement.classList.remove('distance-safe');
+          distanceLeftElement.classList.add("distance-danger");
+          distanceLeftElement.classList.remove("distance-safe");
         } else {
-          distanceLeftElement.classList.remove('distance-danger');
-          distanceLeftElement.classList.add('distance-safe');
+          distanceLeftElement.classList.remove("distance-danger");
+          distanceLeftElement.classList.add("distance-safe");
         }
 
-        console.log(`[Socket.IO] ✅ Esquerda atualizada: ${esquerda} ${unidade}`);
+        console.log(
+          `[Socket.IO] ✅ Esquerda atualizada: ${esquerda} ${unidade}`
+        );
       }
 
       if (distanceCenterElement && centro !== undefined && centro !== null) {
-        distanceCenterElement.textContent = `${parseFloat(centro).toFixed(1)} ${unidade || 'cm'}`;
+        distanceCenterElement.textContent = `${parseFloat(centro).toFixed(1)} ${
+          unidade || "cm"
+        }`;
 
         // Adiciona classe de perigo se <= 20cm
         if (parseFloat(centro) <= DISTANCIA_PERIGO) {
-          distanceCenterElement.classList.add('distance-danger');
-          distanceCenterElement.classList.remove('distance-safe');
+          distanceCenterElement.classList.add("distance-danger");
+          distanceCenterElement.classList.remove("distance-safe");
         } else {
-          distanceCenterElement.classList.remove('distance-danger');
-          distanceCenterElement.classList.add('distance-safe');
+          distanceCenterElement.classList.remove("distance-danger");
+          distanceCenterElement.classList.add("distance-safe");
         }
 
         console.log(`[Socket.IO] ✅ Centro atualizado: ${centro} ${unidade}`);
       }
 
       if (distanceRightElement && direita !== undefined && direita !== null) {
-        distanceRightElement.textContent = `${parseFloat(direita).toFixed(1)} ${unidade || 'cm'}`;
+        distanceRightElement.textContent = `${parseFloat(direita).toFixed(1)} ${
+          unidade || "cm"
+        }`;
 
         // Adiciona classe de perigo se <= 20cm
         if (parseFloat(direita) <= DISTANCIA_PERIGO) {
-          distanceRightElement.classList.add('distance-danger');
-          distanceRightElement.classList.remove('distance-safe');
+          distanceRightElement.classList.add("distance-danger");
+          distanceRightElement.classList.remove("distance-safe");
         } else {
-          distanceRightElement.classList.remove('distance-danger');
-          distanceRightElement.classList.add('distance-safe');
+          distanceRightElement.classList.remove("distance-danger");
+          distanceRightElement.classList.add("distance-safe");
         }
 
         console.log(`[Socket.IO] ✅ Direita atualizada: ${direita} ${unidade}`);
       }
 
       // Verifica se há perigo em qualquer sensor
-      const temPerigo = (parseFloat(esquerda) <= DISTANCIA_PERIGO) ||
-                        (parseFloat(centro) <= DISTANCIA_PERIGO) ||
-                        (parseFloat(direita) <= DISTANCIA_PERIGO);
+      const temPerigo =
+        parseFloat(esquerda) <= DISTANCIA_PERIGO ||
+        parseFloat(centro) <= DISTANCIA_PERIGO ||
+        parseFloat(direita) <= DISTANCIA_PERIGO;
 
       // Atualiza visualização 3D
-      if (distance3D && typeof distance3D.updateSensorData === 'function') {
+      if (distance3D && typeof distance3D.updateSensorData === "function") {
         distance3D.updateSensorData(
           parseFloat(centro) || 0,
           parseFloat(direita) || 0,
           parseFloat(esquerda) || 0,
-          temPerigo  // Passa se tem perigo ou não
+          temPerigo // Passa se tem perigo ou não
         );
       }
 
       if (temPerigo) {
-        console.warn(`[Socket.IO] ⚠️ PERIGO! Obstáculo muito próximo detectado!`);
+        console.warn(
+          `[Socket.IO] ⚠️ PERIGO! Obstáculo muito próximo detectado!`
+        );
       }
 
-      console.log(`[Socket.IO] ✅ Distâncias atualizadas - Esq: ${esquerda} | Centro: ${centro} | Dir: ${direita} ${unidade}`);
+      console.log(
+        `[Socket.IO] ✅ Distâncias atualizadas - Esq: ${esquerda} | Centro: ${centro} | Dir: ${direita} ${unidade}`
+      );
     } else {
-      console.warn("[Socket.IO] ⚠️ Dados de distância inválidos ou ausentes:", data);
+      console.warn(
+        "[Socket.IO] ⚠️ Dados de distância inválidos ou ausentes:",
+        data
+      );
     }
   });
 
@@ -464,7 +555,9 @@ document.addEventListener("DOMContentLoaded", () => {
       currentCargoTag = data.rfid;
       currentCargoName = data.rfidItemName || null;
 
-      console.log(`[Dashboard] ✅ Nova tag carregada no AGV: ${currentCargoTag}`);
+      console.log(
+        `[Dashboard] ✅ Nova tag carregada no AGV: ${currentCargoTag}`
+      );
       if (currentCargoName) {
         console.log(`[Dashboard] 📦 Item: ${currentCargoName}`);
       } else {
@@ -485,10 +578,14 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     } else if (data.rfid === currentCargoTag) {
       // Mesma tag detectada novamente - ignora (já está carregada)
-      console.log(`[Dashboard] 📌 Tag já carregada, mantendo: ${currentCargoTag}`);
+      console.log(
+        `[Dashboard] 📌 Tag já carregada, mantendo: ${currentCargoTag}`
+      );
     } else if (currentCargoTag) {
       // Sensor não detectou nada (tag removida do leitor) - MANTÉM a tag anterior
-      console.log(`[Dashboard] 🔒 Tag removida do leitor, mas mantendo carga: ${currentCargoTag}`);
+      console.log(
+        `[Dashboard] 🔒 Tag removida do leitor, mas mantendo carga: ${currentCargoTag}`
+      );
     } else {
       // Estado inicial - sem nenhuma tag
       console.log(`[Dashboard] 📭 AGV sem carga`);
@@ -538,11 +635,16 @@ document.addEventListener("DOMContentLoaded", () => {
         console.log(`[Dashboard] 🚛 AGV transportando: ${currentCargoName}`);
       } else if (currentCargoTag) {
         // Tem tag mas NÃO está cadastrada - LARANJA
-        agvCargoNameElement.textContent = `Tag: ${currentCargoTag.substring(0, 8)}...`;
+        agvCargoNameElement.textContent = `Tag: ${currentCargoTag.substring(
+          0,
+          8
+        )}...`;
         agvCargoElement.classList.add("unregistered");
         void agvCargoElement.offsetWidth;
         agvCargoElement.classList.add("updated");
-        console.log(`[Dashboard] 🚛 AGV com tag não cadastrada: ${currentCargoTag}`);
+        console.log(
+          `[Dashboard] 🚛 AGV com tag não cadastrada: ${currentCargoTag}`
+        );
       } else {
         // Sem carga - CINZA
         agvCargoNameElement.textContent = "Sem carga";
@@ -804,7 +906,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Opcional: Envia comando ao servidor para limpar a carga
     socket.emit("agv/clear-cargo", {
-      message: "Carga removida manualmente pelo usuário"
+      message: "Carga removida manualmente pelo usuário",
     });
   }
 

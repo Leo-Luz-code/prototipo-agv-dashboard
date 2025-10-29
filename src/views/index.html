@@ -14,8 +14,48 @@
   </head>
   <body>
     <header>
+      <!-- Drawer toggle (hamburger) -->
+      <button
+        id="drawer-toggle"
+        class="drawer-toggle"
+        aria-label="Abrir menu"
+        aria-expanded="false"
+      >
+        ☰
+      </button>
       <h1>Painel de Controle e Monitoramento - AGV 01</h1>
     </header>
+
+    <!-- LATERAL DRAWER (esquerda) -->
+    <nav
+      id="left-drawer"
+      class="left-drawer"
+      role="navigation"
+      aria-hidden="true"
+    >
+      <div class="drawer-header">
+        <h3>Menu</h3>
+        <button id="drawer-close" class="drawer-close" aria-label="Fechar menu">
+          ✕
+        </button>
+      </div>
+      <ul class="drawer-list">
+        <li>
+          <a href="#" id="drawer-link-sensors" class="drawer-link"
+            >📏 Sensores</a
+          >
+        </li>
+        <li>
+          <a href="#" id="drawer-link-rfid" class="drawer-link">📡 RFID</a>
+        </li>
+      </ul>
+    </nav>
+    <div
+      id="drawer-overlay"
+      class="drawer-overlay"
+      tabindex="-1"
+      aria-hidden="true"
+    ></div>
     <main class="dashboard-container">
       <section class="map-section">
         <h2>Mapa do Percurso (Grafo 11 Nós)</h2>
@@ -45,7 +85,7 @@
         </div>
 
         <!-- CARD CONSOLIDADO DE RFID (movido da barra lateral) -->
-        <div class="info-card rfid-main-card">
+        <div id="rfid-card" class="info-card rfid-main-card">
           <h3>📡 Sistema RFID</h3>
 
           <!-- Seção 1: Leitura Atual -->
@@ -59,12 +99,23 @@
                 <span class="rfid-reading-label">Tag ID:</span>
                 <div class="rfid-reading-value-wrapper">
                   <p id="rfid-data" class="rfid-reading-value">Nenhuma</p>
-                  <button id="btn-copy-tag-to-register" class="btn-copy-tag" title="Copiar para cadastro">→</button>
+                  <button
+                    id="btn-copy-tag-to-register"
+                    class="btn-copy-tag"
+                    title="Copiar para cadastro"
+                  >
+                    →
+                  </button>
                 </div>
               </div>
               <div class="rfid-reading-item">
                 <span class="rfid-reading-label">Item:</span>
-                <p id="rfid-item-name" class="rfid-reading-value rfid-item-name-display">Aguardando leitura...</p>
+                <p
+                  id="rfid-item-name"
+                  class="rfid-reading-value rfid-item-name-display"
+                >
+                  Aguardando leitura...
+                </p>
               </div>
               <div class="rfid-reading-item">
                 <button id="btn-clear-cargo" class="btn btn-clear-cargo">
@@ -83,9 +134,21 @@
               <h4>Cadastrar Nova Tag</h4>
             </div>
             <div class="rfid-form">
-              <input type="text" id="input-tag-id" placeholder="ID da Tag (ex: 91B657A4)" class="rfid-input" />
-              <input type="text" id="input-item-name" placeholder="Nome do Item" class="rfid-input" />
-              <button id="btn-register-tag" class="btn btn-primary btn-small">📥 Cadastrar Tag</button>
+              <input
+                type="text"
+                id="input-tag-id"
+                placeholder="ID da Tag (ex: 91B657A4)"
+                class="rfid-input"
+              />
+              <input
+                type="text"
+                id="input-item-name"
+                placeholder="Nome do Item"
+                class="rfid-input"
+              />
+              <button id="btn-register-tag" class="btn btn-primary btn-small">
+                📥 Cadastrar Tag
+              </button>
             </div>
           </div>
 
@@ -118,7 +181,7 @@
           </div>
           <p id="battery-percentage" class="percentage-text">100%</p>
         </div>
-        <div class="info-card">
+        <div id="sensors-card" class="info-card">
           <h3>📏 Sensores de Distância</h3>
           <div class="distance-sensors">
             <div class="distance-item">
@@ -142,19 +205,19 @@
           </div>
           <div class="distance-3d-legend">
             <div class="legend-item">
-              <span class="legend-color" style="background: #ffff00;"></span>
+              <span class="legend-color" style="background: #ffff00"></span>
               <span>AGV (Seta = Frente)</span>
             </div>
             <div class="legend-item">
-              <span class="legend-color" style="background: #ff4444;"></span>
+              <span class="legend-color" style="background: #ff4444"></span>
               <span>🔴 Frontal</span>
             </div>
             <div class="legend-item">
-              <span class="legend-color" style="background: #44ff44;"></span>
+              <span class="legend-color" style="background: #44ff44"></span>
               <span>🟢 Direita</span>
             </div>
             <div class="legend-item">
-              <span class="legend-color" style="background: #4444ff;"></span>
+              <span class="legend-color" style="background: #4444ff"></span>
               <span>🔵 Esquerda</span>
             </div>
           </div>
