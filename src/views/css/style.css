@@ -184,7 +184,11 @@ h2 {
   display: flex;
   align-items: center;
   gap: 5px;
-  background: linear-gradient(135deg, rgba(40, 167, 69, 0.95) 0%, rgba(34, 139, 58, 0.95) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(40, 167, 69, 0.95) 0%,
+    rgba(34, 139, 58, 0.95) 100%
+  );
   border: 2px solid rgba(255, 255, 255, 0.3);
   border-radius: 6px;
   padding: 4px 8px;
@@ -196,12 +200,20 @@ h2 {
 }
 
 .agv-cargo-badge.empty {
-  background: linear-gradient(135deg, rgba(108, 117, 125, 0.9) 0%, rgba(90, 98, 104, 0.9) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(108, 117, 125, 0.9) 0%,
+    rgba(90, 98, 104, 0.9) 100%
+  );
   border-color: rgba(255, 255, 255, 0.2);
 }
 
 .agv-cargo-badge.unregistered {
-  background: linear-gradient(135deg, rgba(255, 193, 7, 0.95) 0%, rgba(255, 152, 0, 0.95) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(255, 193, 7, 0.95) 0%,
+    rgba(255, 152, 0, 0.95) 100%
+  );
   border-color: rgba(255, 255, 255, 0.4);
 }
 
@@ -531,7 +543,11 @@ h2 {
 
 /* ===== CARD PRINCIPAL RFID ===== */
 .rfid-main-card {
-  background: linear-gradient(135deg, var(--card-color) 0%, rgba(37, 40, 46, 0.8) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--card-color) 0%,
+    rgba(37, 40, 46, 0.8) 100%
+  );
   border-left: 4px solid var(--primary-color);
   /* Layout em Grid: h3 ocupa toda a largura, depois 3 seções com 2 divisores verticais */
   display: grid;
@@ -585,7 +601,12 @@ h2 {
 .rfid-divider {
   width: 1px;
   height: auto;
-  background: linear-gradient(180deg, transparent, var(--border-color), transparent);
+  background: linear-gradient(
+    180deg,
+    transparent,
+    var(--border-color),
+    transparent
+  );
   margin: 0;
   align-self: stretch;
 }
@@ -724,7 +745,11 @@ h2 {
 
 /* ===== MELHORIAS NOS ITENS DA LISTA ===== */
 .rfid-item {
-  background: linear-gradient(135deg, var(--bg-color) 0%, rgba(26, 28, 32, 0.8) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--bg-color) 0%,
+    rgba(26, 28, 32, 0.8) 100%
+  );
 }
 
 /* Scrollbar customizada para lista RFID */
@@ -766,7 +791,12 @@ h2 {
     /* Divisor volta a ser horizontal */
     width: auto;
     height: 1px;
-    background: linear-gradient(90deg, transparent, var(--border-color), transparent);
+    background: linear-gradient(
+      90deg,
+      transparent,
+      var(--border-color),
+      transparent
+    );
     margin: 1.5rem 0;
   }
 }
@@ -839,7 +869,8 @@ h2 {
 }
 
 @keyframes dangerPulse {
-  0%, 100% {
+  0%,
+  100% {
     transform: scale(1);
     opacity: 1;
   }
@@ -857,7 +888,8 @@ h2 {
 }
 
 @keyframes warningBlink {
-  0%, 100% {
+  0%,
+  100% {
     background-color: rgba(220, 53, 69, 0.15);
   }
   50% {
@@ -870,7 +902,11 @@ h2 {
 .distance-3d-container {
   width: 100%;
   height: 350px;
-  background: linear-gradient(135deg, rgba(10, 14, 20, 0.8) 0%, rgba(0, 0, 0, 0.9) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(10, 14, 20, 0.8) 0%,
+    rgba(0, 0, 0, 0.9) 100%
+  );
   border-radius: 8px;
   overflow: hidden;
   position: relative;
@@ -911,4 +947,102 @@ h2 {
   border-radius: 3px;
   display: inline-block;
   border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* ===== LEFT DRAWER (Sidebar) ===== */
+.drawer-toggle {
+  position: absolute;
+  left: 16px;
+  top: 18px;
+  background: transparent;
+  border: none;
+  color: var(--text-color);
+  font-size: 1.25rem;
+  cursor: pointer;
+  z-index: 1100;
+}
+
+.left-drawer {
+  position: fixed;
+  left: 0;
+  top: 0;
+  height: 100vh;
+  width: 260px;
+  background: linear-gradient(180deg, var(--card-color), #1f2226);
+  border-right: 1px solid var(--border-color);
+  box-shadow: 4px 0 14px rgba(0, 0, 0, 0.6);
+  transform: translateX(-105%);
+  transition: transform 250ms ease-in-out;
+  z-index: 1200;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.left-drawer.open {
+  transform: translateX(0);
+}
+
+.drawer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.drawer-close {
+  background: transparent;
+  border: none;
+  color: var(--text-color);
+  font-size: 1.1rem;
+  cursor: pointer;
+}
+
+.drawer-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.drawer-link {
+  display: block;
+  padding: 0.75rem 0.6rem;
+  color: var(--text-color);
+  text-decoration: none;
+  border-radius: 6px;
+  font-weight: 700;
+}
+
+.drawer-link:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.drawer-overlay {
+  position: fixed;
+  inset: 0; /* top:0; right:0; bottom:0; left:0 */
+  background: rgba(0, 0, 0, 0.45);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 200ms ease-in-out;
+  z-index: 1150;
+}
+
+.drawer-overlay.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Ensure header text doesn't overlap too much with the toggle on smaller screens */
+@media (max-width: 600px) {
+  .drawer-toggle {
+    left: 12px;
+    top: 12px;
+  }
+  header h1 {
+    font-size: 1.05rem;
+  }
 }

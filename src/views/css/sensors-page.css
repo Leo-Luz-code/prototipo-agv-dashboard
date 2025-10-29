@@ -1,0 +1,70 @@
+/* Estilos específicos para a página de sensores */
+.sensors-container {
+  padding: 1rem;
+  max-width: 800px; /* Reduz largura máxima para não esticar demais */
+  margin: 0 auto;
+}
+
+.sensors-grid {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.info-card {
+  background: var(--card-bg);
+  border-radius: 8px;
+  padding: 1rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 500px; /* Limita a largura dos cards */
+}
+
+/* Ajuste específico para o card da visualização 3D */
+.sensors-3d-card {
+  margin-bottom: 1rem;
+}
+
+.info-card h3 {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  color: var(--text-title);
+  font-size: 1.1rem;
+}
+
+.distance-sensors {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.distance-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem;
+  background: var(--item-bg);
+  border-radius: 4px;
+}
+
+.distance-value {
+  font-family: monospace;
+  font-size: 1.1em;
+  padding: 0.25rem 0.5rem;
+  background: var(--value-bg);
+  border-radius: 4px;
+  transition: all 0.3s ease;
+}
+
+.distance-value.distance-danger {
+  color: var(--danger-color);
+  background: var(--danger-bg);
+  font-weight: bold;
+}
+
+.distance-value.distance-safe {
+  color: var(--success-color);
+  background: var(--success-bg);
+}

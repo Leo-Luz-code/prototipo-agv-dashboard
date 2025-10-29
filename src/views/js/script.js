@@ -9,19 +9,15 @@ document.addEventListener("DOMContentLoaded", () => {
   const batteryLevelElement = document.getElementById("battery-level");
   const batteryPercentageElement =
     document.getElementById("battery-percentage");
-  const rfidDataElement = document.getElementById("rfid-data");
-  const rfidItemNameElement = document.getElementById("rfid-item-name");
   const agvCargoElement = document.getElementById("agv-cargo");
   const agvCargoNameElement = document.getElementById("agv-cargo-name");
-  const btnClearCargo = document.getElementById("btn-clear-cargo");
-  const distanceLeftElement = document.getElementById("distance-left");
-  const distanceCenterElement = document.getElementById("distance-center");
-  const distanceRightElement = document.getElementById("distance-right");
+
+  // Note: distance sensor DOM elements were moved to sensors.html
 
   // Inicializar visualização 3D dos sensores
   let distance3D = null;
-  if (typeof Distance3DVisualization !== 'undefined') {
-    distance3D = new Distance3DVisualization('distance-3d-canvas');
+  if (typeof Distance3DVisualization !== "undefined") {
+    distance3D = new Distance3DVisualization("distance-3d-canvas");
     console.log("[APP] 🎯 Visualização 3D dos sensores inicializada");
   } else {
     console.warn("[APP] ⚠️ Distance3DVisualization não disponível");
@@ -33,8 +29,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Verificar se os elementos existem
   console.log("[APP] 📋 Elementos carregados:");
-  console.log("  - rfidDataElement:", !!rfidDataElement);
-  console.log("  - rfidItemNameElement:", !!rfidItemNameElement);
+  console.log("  - agvCargoElement:", !!agvCargoElement);
   console.log("  - statusElement:", !!statusElement);
   console.log("  - socket:", !!socket);
 
@@ -44,12 +39,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const btnStartPause = document.getElementById("btn-start-pause");
   const btnReturn = document.getElementById("btn-return");
   const btnEmergencyStop = document.getElementById("btn-emergency-stop");
+  const btnClearCargo = document.getElementById("btn-clear-cargo");
 
-  // Conexão estabelecida
-  socket.on("connect", () => {
-    console.log("[Socket.IO] ✅ CONECTADO ao servidor!");
-    console.log("[Socket.IO] 🔑 Socket ID:", socket.id);
-  });
+  // drawer behavior moved to js/drawer.js (shared)
 
   // Desconectado
   socket.on("disconnect", () => {
@@ -86,18 +78,25 @@ document.addEventListener("DOMContentLoaded", () => {
       status.posicao &&
       dropdownInicio.value !== status.posicao
     ) {
-      console.log(`[Socket.IO] 🔄 Sincronizando posição: ${dropdownInicio.value} -> ${status.posicao}`);
+      console.log(
+        `[Socket.IO] 🔄 Sincronizando posição: ${dropdownInicio.value} -> ${status.posicao}`
+      );
       setAgvPosition(status.posicao, "Ocioso (Sincronizado)");
       dropdownInicio.value = status.posicao;
     } else {
-      console.log(`[Socket.IO] ⏸️ Sincronização de posição bloqueada (isMoving=${isMoving}, posicao=${status.posicao})`);
+      console.log(
+        `[Socket.IO] ⏸️ Sincronização de posição bloqueada (isMoving=${isMoving}, posicao=${status.posicao})`
+      );
     }
   });
 
   // Ouve pelo evento 'agv/rfid/update' apenas para atualizar sensores RFID
   // SEM afetar a posição do AGV
   socket.on("agv/rfid/update", (update) => {
-    console.log("[Socket.IO] 📡 Update de RFID recebido (NÃO afeta posição):", update);
+    console.log(
+      "[Socket.IO] 📡 Update de RFID recebido (NÃO afeta posição):",
+      update
+    );
 
     const rfidValue = update.sensores?.rfid || "Nenhuma";
     const rfidItemName = update.sensores?.rfidItemName || null;
@@ -108,43 +107,28 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Verifica se é uma nova tag válida E diferente da atual
     if (rfidValue && rfidValue !== "Nenhuma" && rfidValue !== currentCargoTag) {
-      // Nova tag detectada - atualiza SOMENTE se for diferente
+      // Nova tag detectada - atualiza o estado interno
       currentCargoTag = rfidValue;
       currentCargoName = rfidItemName;
 
-      console.log(`[Socket.IO] ✅ Nova tag carregada no AGV: ${currentCargoTag}`);
+      console.log(
+        `[Socket.IO] ✅ Nova tag carregada no AGV: ${currentCargoTag}`
+      );
 
-      // Atualiza APENAS os elementos visuais do RFID, SEM tocar na posição
-      if (rfidDataElement) {
-        rfidDataElement.textContent = currentCargoTag;
-        rfidDataElement.style.transition = "all 0.3s ease";
-        rfidDataElement.style.transform = "scale(1.1)";
-        rfidDataElement.style.color = "#4CAF50";
-        setTimeout(() => {
-          rfidDataElement.style.transform = "scale(1)";
-        }, 300);
+      if (currentCargoName) {
+        console.log(`[Socket.IO] 📦 Item: ${currentCargoName}`);
+      } else {
+        console.log(`[Socket.IO] ⚠️ Tag não cadastrada no sistema`);
       }
 
-      // Atualiza o nome do item
-      if (rfidItemNameElement) {
-        rfidItemNameElement.classList.remove("item-found", "item-not-found");
-        if (currentCargoName) {
-          rfidItemNameElement.textContent = `📦 ${currentCargoName}`;
-          rfidItemNameElement.classList.add("item-found");
-        } else {
-          rfidItemNameElement.textContent = "⚠️ Tag não cadastrada";
-          rfidItemNameElement.classList.add("item-not-found");
-        }
-      }
-
-      // Atualiza o badge de carga do AGV
+      // Atualiza o badge de carga do AGV com base no estado persistente
       if (agvCargoElement && agvCargoNameElement) {
         agvCargoElement.classList.remove("updated", "empty", "unregistered");
         if (currentCargoName) {
           agvCargoNameElement.textContent = currentCargoName;
           agvCargoElement.classList.add("updated");
         } else {
-          agvCargoNameElement.textContent = `Tag: ${currentCargoTag.substring(0, 8)}...`;
+          agvCargoNameElement.textContent = "Não registrado";
           agvCargoElement.classList.add("unregistered");
           agvCargoElement.classList.add("updated");
         }
@@ -152,95 +136,49 @@ document.addEventListener("DOMContentLoaded", () => {
           agvCargoElement.classList.remove("updated");
         }, 500);
       }
-
-      // Atualiza estado do botão "Sem Carga"
-      if (btnClearCargo) {
-        btnClearCargo.disabled = false;
-      }
     }
 
     console.log("[Socket.IO] ⚠️ IMPORTANTE: Posição do AGV NÃO foi alterada!");
   });
 
-  // Ouve pelo evento 'agv/distance' para atualizar sensores de distância
+  // Ouve pelo evento 'agv/distance' para atualizar visualização 3D
   socket.on("agv/distance", (data) => {
     console.log("[Socket.IO] 📏 Dados de distância recebidos:", data);
 
     if (data && data.distancia) {
-      const { esquerda, centro, direita, unidade } = data.distancia;
-
-      console.log(`[Socket.IO] 📏 Valores recebidos - Esq: ${esquerda} | Centro: ${centro} | Dir: ${direita}`);
+      const { esquerda, centro, direita } = data.distancia;
+      console.log(
+        `[Socket.IO] 📏 Valores recebidos - Esq: ${esquerda} | Centro: ${centro} | Dir: ${direita}`
+      );
 
       const DISTANCIA_PERIGO = 20; // 20 cm ou menos = PERIGO
 
-      // Atualiza elementos visuais de distância com validação e alerta de perigo
-      if (distanceLeftElement && esquerda !== undefined && esquerda !== null) {
-        distanceLeftElement.textContent = `${parseFloat(esquerda).toFixed(1)} ${unidade || 'cm'}`;
-
-        // Adiciona classe de perigo se <= 20cm
-        if (parseFloat(esquerda) <= DISTANCIA_PERIGO) {
-          distanceLeftElement.classList.add('distance-danger');
-          distanceLeftElement.classList.remove('distance-safe');
-        } else {
-          distanceLeftElement.classList.remove('distance-danger');
-          distanceLeftElement.classList.add('distance-safe');
-        }
-
-        console.log(`[Socket.IO] ✅ Esquerda atualizada: ${esquerda} ${unidade}`);
-      }
-
-      if (distanceCenterElement && centro !== undefined && centro !== null) {
-        distanceCenterElement.textContent = `${parseFloat(centro).toFixed(1)} ${unidade || 'cm'}`;
-
-        // Adiciona classe de perigo se <= 20cm
-        if (parseFloat(centro) <= DISTANCIA_PERIGO) {
-          distanceCenterElement.classList.add('distance-danger');
-          distanceCenterElement.classList.remove('distance-safe');
-        } else {
-          distanceCenterElement.classList.remove('distance-danger');
-          distanceCenterElement.classList.add('distance-safe');
-        }
-
-        console.log(`[Socket.IO] ✅ Centro atualizado: ${centro} ${unidade}`);
-      }
-
-      if (distanceRightElement && direita !== undefined && direita !== null) {
-        distanceRightElement.textContent = `${parseFloat(direita).toFixed(1)} ${unidade || 'cm'}`;
-
-        // Adiciona classe de perigo se <= 20cm
-        if (parseFloat(direita) <= DISTANCIA_PERIGO) {
-          distanceRightElement.classList.add('distance-danger');
-          distanceRightElement.classList.remove('distance-safe');
-        } else {
-          distanceRightElement.classList.remove('distance-danger');
-          distanceRightElement.classList.add('distance-safe');
-        }
-
-        console.log(`[Socket.IO] ✅ Direita atualizada: ${direita} ${unidade}`);
-      }
-
       // Verifica se há perigo em qualquer sensor
-      const temPerigo = (parseFloat(esquerda) <= DISTANCIA_PERIGO) ||
-                        (parseFloat(centro) <= DISTANCIA_PERIGO) ||
-                        (parseFloat(direita) <= DISTANCIA_PERIGO);
+      const temPerigo =
+        parseFloat(esquerda) <= DISTANCIA_PERIGO ||
+        parseFloat(centro) <= DISTANCIA_PERIGO ||
+        parseFloat(direita) <= DISTANCIA_PERIGO;
 
-      // Atualiza visualização 3D
-      if (distance3D && typeof distance3D.updateSensorData === 'function') {
+      // Atualiza visualização 3D no dashboard
+      if (distance3D && typeof distance3D.updateSensorData === "function") {
         distance3D.updateSensorData(
           parseFloat(centro) || 0,
           parseFloat(direita) || 0,
           parseFloat(esquerda) || 0,
-          temPerigo  // Passa se tem perigo ou não
+          temPerigo // Passa se tem perigo ou não
         );
       }
 
       if (temPerigo) {
-        console.warn(`[Socket.IO] ⚠️ PERIGO! Obstáculo muito próximo detectado!`);
+        console.warn(
+          `[Socket.IO] ⚠️ PERIGO! Obstáculo muito próximo detectado!`
+        );
       }
-
-      console.log(`[Socket.IO] ✅ Distâncias atualizadas - Esq: ${esquerda} | Centro: ${centro} | Dir: ${direita} ${unidade}`);
     } else {
-      console.warn("[Socket.IO] ⚠️ Dados de distância inválidos ou ausentes:", data);
+      console.warn(
+        "[Socket.IO] ⚠️ Dados de distância inválidos ou ausentes:",
+        data
+      );
     }
   });
 
@@ -387,7 +325,7 @@ document.addEventListener("DOMContentLoaded", () => {
     updateDashboard({
       status: statusText,
       battery: parseInt(batteryPercentageElement.textContent) || 100, // Mantém bateria
-      rfid: rfidDataElement.textContent || "Nenhuma",
+      rfid: currentCargoTag || "Nenhuma",
     });
   }
 
@@ -464,65 +402,32 @@ document.addEventListener("DOMContentLoaded", () => {
       currentCargoTag = data.rfid;
       currentCargoName = data.rfidItemName || null;
 
-      console.log(`[Dashboard] ✅ Nova tag carregada no AGV: ${currentCargoTag}`);
+      console.log(
+        `[Dashboard] ✅ Nova tag carregada no AGV: ${currentCargoTag}`
+      );
       if (currentCargoName) {
         console.log(`[Dashboard] 📦 Item: ${currentCargoName}`);
       } else {
         console.log(`[Dashboard] ⚠️ Tag não cadastrada no sistema`);
       }
-
-      // Força a atualização do DOM com a nova tag
-      if (rfidDataElement) {
-        rfidDataElement.textContent = currentCargoTag;
-        // Adiciona efeito visual de atualização
-        rfidDataElement.style.transition = "all 0.3s ease";
-        rfidDataElement.style.transform = "scale(1.1)";
-        rfidDataElement.style.color = "#4CAF50";
-
-        setTimeout(() => {
-          rfidDataElement.style.transform = "scale(1)";
-        }, 300);
-      }
     } else if (data.rfid === currentCargoTag) {
       // Mesma tag detectada novamente - ignora (já está carregada)
-      console.log(`[Dashboard] 📌 Tag já carregada, mantendo: ${currentCargoTag}`);
+      console.log(
+        `[Dashboard] 📌 Tag já carregada, mantendo: ${currentCargoTag}`
+      );
     } else if (currentCargoTag) {
       // Sensor não detectou nada (tag removida do leitor) - MANTÉM a tag anterior
-      console.log(`[Dashboard] 🔒 Tag removida do leitor, mas mantendo carga: ${currentCargoTag}`);
+      console.log(
+        `[Dashboard] 🔒 Tag removida do leitor, mas mantendo carga: ${currentCargoTag}`
+      );
     } else {
       // Estado inicial - sem nenhuma tag
       console.log(`[Dashboard] 📭 AGV sem carga`);
     }
 
-    // SEMPRE atualiza os displays baseado no estado persistente (currentCargoTag/Name)
-    // NÃO usa data.rfid, usa APENAS o estado salvo
-
-    // Atualiza display do Tag ID
-    if (rfidDataElement && currentCargoTag) {
-      rfidDataElement.textContent = currentCargoTag;
-    } else if (rfidDataElement && !currentCargoTag) {
-      rfidDataElement.textContent = "Nenhuma";
-      rfidDataElement.style.color = "#666";
-    }
-
-    // Atualiza o nome do item RFID baseado no estado persistente
-    if (rfidItemNameElement) {
-      // Remove todas as classes de estado
-      rfidItemNameElement.classList.remove("item-found", "item-not-found");
-
-      if (currentCargoName) {
-        // Tem carga COM nome identificado
-        rfidItemNameElement.textContent = `📦 ${currentCargoName}`;
-        rfidItemNameElement.classList.add("item-found");
-      } else if (currentCargoTag) {
-        // Tem tag mas NÃO está cadastrada
-        rfidItemNameElement.textContent = "⚠️ Tag não cadastrada";
-        rfidItemNameElement.classList.add("item-not-found");
-      } else {
-        // Sem carga nenhuma
-        rfidItemNameElement.textContent = "Aguardando leitura...";
-      }
-    }
+    // Note: RFID detailed displays live on /rfid.html now. We only keep the
+    // persistent state here (currentCargoTag/currentCargoName) and update the
+    // AGV badge below.
 
     // Atualiza o badge de carga do AGV no mapa baseado no estado persistente
     if (agvCargoElement && agvCargoNameElement) {
@@ -537,12 +442,14 @@ document.addEventListener("DOMContentLoaded", () => {
         agvCargoElement.classList.add("updated");
         console.log(`[Dashboard] 🚛 AGV transportando: ${currentCargoName}`);
       } else if (currentCargoTag) {
-        // Tem tag mas NÃO está cadastrada - LARANJA
-        agvCargoNameElement.textContent = `Tag: ${currentCargoTag.substring(0, 8)}...`;
+        // Tem tag mas NÃO está cadastrada - exibe 'Não registrado'
+        agvCargoNameElement.textContent = "Não registrado";
         agvCargoElement.classList.add("unregistered");
         void agvCargoElement.offsetWidth;
         agvCargoElement.classList.add("updated");
-        console.log(`[Dashboard] 🚛 AGV com tag não cadastrada: ${currentCargoTag}`);
+        console.log(
+          `[Dashboard] 🚛 AGV com tag não cadastrada: ${currentCargoTag}`
+        );
       } else {
         // Sem carga - CINZA
         agvCargoNameElement.textContent = "Sem carga";
@@ -555,10 +462,8 @@ document.addEventListener("DOMContentLoaded", () => {
       }, 500);
     }
 
-    // Atualiza estado do botão "Sem Carga"
-    if (btnClearCargo) {
-      btnClearCargo.disabled = !currentCargoTag;
-    }
+    // Botão de limpar carga foi removido do dashboard; gerenciamento de
+    // tags e cópia de leituras agora acontece em /rfid.html
   }
 
   function stopAllPulseAnimations() {
@@ -613,7 +518,7 @@ document.addEventListener("DOMContentLoaded", () => {
     updateDashboard({
       status: "PARADA DE EMERGÊNCIA",
       battery: parseInt(batteryPercentageElement.textContent) || 100,
-      rfid: rfidDataElement.textContent || "Nenhuma",
+      rfid: currentCargoTag || "Nenhuma",
     });
 
     // Trava os controles em um estado de "parado"
@@ -685,7 +590,7 @@ document.addEventListener("DOMContentLoaded", () => {
       updateDashboard({
         status: `Comando: ${primeiroComando}. Em trânsito para ${currentRoute[1]}`,
         battery: parseInt(batteryPercentageElement.textContent),
-        rfid: rfidDataElement.textContent,
+        rfid: currentCargoTag,
       });
 
       // O índice de rota é 1 para começar o movimento para o SEGUNDO nó.
@@ -724,7 +629,7 @@ document.addEventListener("DOMContentLoaded", () => {
     animateSegment(prevPointName, destinationPointName);
 
     let statusText;
-    let rfid = rfidDataElement.textContent; // Manter RFID
+    let rfid = currentCargoTag; // Manter RFID
     let battery = parseInt(batteryPercentageElement.textContent) - 1; // Simular queda
     if (battery < 0) battery = 100; // Recarrega se acabar (demo)
 
@@ -773,38 +678,24 @@ document.addEventListener("DOMContentLoaded", () => {
    * Limpa manualmente a carga do AGV
    */
   function clearCargo() {
-    console.log("[APP] 🚫 Limpando carga do AGV...");
+    console.log("[APP] 🚫 Limpando carga do AGV (estado interno)...");
 
-    // Limpa o estado persistente
+    // Limpa apenas o estado interno. A interface detalhada de RFID
+    // foi movida para /rfid.html; aqui atualizamos apenas o badge do AGV.
     currentCargoTag = null;
     currentCargoName = null;
 
-    // Atualiza os elementos visuais
-    if (rfidDataElement) {
-      rfidDataElement.textContent = "Nenhuma";
-      rfidDataElement.style.color = "#666";
-    }
-
-    if (rfidItemNameElement) {
-      rfidItemNameElement.textContent = "Aguardando leitura...";
-      rfidItemNameElement.classList.remove("item-found", "item-not-found");
-    }
-
     if (agvCargoElement && agvCargoNameElement) {
+      agvCargoElement.classList.remove("updated", "unregistered");
       agvCargoElement.classList.add("empty");
-      agvCargoElement.classList.remove("updated");
       agvCargoNameElement.textContent = "Sem carga";
     }
 
-    if (btnClearCargo) {
-      btnClearCargo.disabled = true;
-    }
+    console.log("[APP] ✅ Estado interno de carga limpo.");
 
-    console.log("[APP] ✅ Carga limpa com sucesso!");
-
-    // Opcional: Envia comando ao servidor para limpar a carga
+    // Opcional: informe ao servidor que a carga foi removida
     socket.emit("agv/clear-cargo", {
-      message: "Carga removida manualmente pelo usuário"
+      message: "Carga removida manualmente pelo usuário",
     });
   }
 

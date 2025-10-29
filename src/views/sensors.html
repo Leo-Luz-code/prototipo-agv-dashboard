@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sensores - AGV Dashboard</title>
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="css/sensors-page.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <header>
+      <button
+        id="drawer-toggle"
+        class="drawer-toggle"
+        aria-label="Abrir menu"
+        aria-expanded="false"
+      >
+        ☰
+      </button>
+      <h1>Sensores - AGV 01</h1>
+    </header>
+
+    <!-- LATERAL DRAWER (esquerda) -->
+    <nav
+      id="left-drawer"
+      class="left-drawer"
+      role="navigation"
+      aria-hidden="true"
+    >
+      <div class="drawer-header">
+        <h3>Menu</h3>
+        <button id="drawer-close" class="drawer-close" aria-label="Fechar menu">
+          ✕
+        </button>
+      </div>
+      <ul class="drawer-list">
+        <li>
+          <a href="/index.html" class="drawer-link">🎛️ Dashboard</a>
+        </li>
+        <li>
+          <a
+            href="/sensors.html"
+            id="drawer-link-sensors"
+            class="drawer-link active"
+            >📏 Sensores</a
+          >
+        </li>
+        <li>
+          <a href="/rfid.html" class="drawer-link">📡 RFID</a>
+        </li>
+      </ul>
+    </nav>
+    <div
+      id="drawer-overlay"
+      class="drawer-overlay"
+      tabindex="-1"
+      aria-hidden="true"
+    ></div>
+
+    <main class="sensors-container">
+      <div class="sensors-grid">
+        <!-- Card de Visualização 3D -->
+        <div class="info-card sensors-3d-card">
+          <h3>🎯 Visualização 3D - Sensores</h3>
+          <div id="distance-3d-container" class="distance-3d-container">
+            <canvas id="distance-3d-canvas"></canvas>
+          </div>
+          <div class="distance-3d-legend">
+            <div class="legend-item">
+              <span class="legend-color" style="background: #ffff00"></span>
+              <span>AGV (Seta = Frente)</span>
+            </div>
+            <div class="legend-item">
+              <span class="legend-color" style="background: #ff4444"></span>
+              <span>🔴 Frontal</span>
+            </div>
+            <div class="legend-item">
+              <span class="legend-color" style="background: #44ff44"></span>
+              <span>🟢 Direita</span>
+            </div>
+            <div class="legend-item">
+              <span class="legend-color" style="background: #4444ff"></span>
+              <span>🔵 Esquerda</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card de Sensores de Distância -->
+        <div id="sensors-card" class="info-card">
+          <h3>📏 Sensores de Distância</h3>
+          <div class="distance-sensors">
+            <div class="distance-item">
+              <span class="distance-label">⬅️ Esquerda:</span>
+              <span id="distance-left" class="distance-value">-- cm</span>
+            </div>
+            <div class="distance-item">
+              <span class="distance-label">⬆️ Centro:</span>
+              <span id="distance-center" class="distance-value">-- cm</span>
+            </div>
+            <div class="distance-item">
+              <span class="distance-label">➡️ Direita:</span>
+              <span id="distance-right" class="distance-value">-- cm</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="js/distance3D.js"></script>
+    <script src="js/drawer.js"></script>
+    <!-- Módulos de Sensores -->
+    <script src="js/sensors/distance-sensor.js"></script>
+    <!-- Adicione novos módulos de sensores aqui -->
+
+    <!-- Gerenciador Principal -->
+    <script src="js/sensors.js"></script>
+  </body>
+</html>
