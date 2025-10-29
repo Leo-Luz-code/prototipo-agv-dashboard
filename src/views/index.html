@@ -23,7 +23,10 @@
       >
         ☰
       </button>
-      <h1>Painel de Controle e Monitoramento - AGV 01</h1>
+      <div class="header-content">
+        <img src="img/logo.png" alt="Logo da Empresa" class="company-logo" />
+        <h1>Painel de Controle e Monitoramento - AGV 01</h1>
+      </div>
     </header>
 
     <!-- LATERAL DRAWER (esquerda) -->
@@ -85,6 +88,27 @@
           </div>
         </div>
 
+        <div class="info-card">
+          <h3>Controles</h3>
+
+          <div class="route-selection">
+            <label for="select-inicio">Início:</label>
+            <select id="select-inicio" class="select-route"></select>
+            <label for="select-destino">Destino:</label>
+            <select id="select-destino" class="select-route"></select>
+          </div>
+          <div class="controls-container">
+            <button id="btn-start-pause" class="btn btn-primary">
+              Enviar Tarefa
+            </button>
+            <button id="btn-return" class="btn btn-secondary">
+              Retornar à Base
+            </button>
+            <button id="btn-emergency-stop" class="btn btn-danger">
+              PARADA DE EMERGÊNCIA
+            </button>
+          </div>
+        </div>
         <!-- Badge de carga do AGV (mantida no mapa) -->
         <!-- O controle detalhado de RFID foi movido para /rfid.html -->
       </section>
@@ -123,27 +147,6 @@
               <span class="legend-color" style="background: #4444ff"></span>
               <span>🔵 Esquerda</span>
             </div>
-          </div>
-        </div>
-        <div class="info-card">
-          <h3>Controles</h3>
-
-          <div class="route-selection">
-            <label for="select-inicio">Ponto de Início:</label>
-            <select id="select-inicio" class="select-route"></select>
-            <label for="select-destino">Ponto de Destino:</label>
-            <select id="select-destino" class="select-route"></select>
-          </div>
-          <div class="controls-container">
-            <button id="btn-start-pause" class="btn btn-primary">
-              Enviar Tarefa
-            </button>
-            <button id="btn-return" class="btn btn-secondary">
-              Retornar à Base
-            </button>
-            <button id="btn-emergency-stop" class="btn btn-danger">
-              PARADA DE EMERGÊNCIA
-            </button>
           </div>
         </div>
       </aside>
