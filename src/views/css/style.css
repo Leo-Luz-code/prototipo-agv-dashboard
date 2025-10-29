@@ -1,31 +1,76 @@
+/* =================================================
+   Import do tema principal AXION
+   ================================================= */
+@import url("theme.css");
+
+/* Sobrescrita das variáveis antigas com as novas */
 :root {
-  --bg-color: #1a1c20;
-  --card-color: #25282e;
-  --border-color: #3e4249;
-  --text-color: #e0e0e0;
-  --text-muted-color: #8c929c;
-  --primary-color: #007bff;
-  --success-color: #28a745;
-  --warning-color: #ffc107;
-  --danger-color: #dc3545;
-  --agv-color: #36d1dc;
-  --path-color: #4a4f58;
-  --path-animation-color: var(--success-color);
+  --bg-color: var(--color-background);
+  --card-color: var(--color-surface);
+  --border-color: var(--color-primary);
+  --text-color: var(--color-text-primary);
+  --text-muted-color: var(--color-text-secondary);
+  --primary-color: var(--color-primary);
+  --success-color: var(--color-success);
+  --warning-color: var(--color-warning);
+  --danger-color: var(--color-danger);
+  --agv-color: var(--color-info);
+  --path-color: var(--color-primary-glow);
+  --path-animation-color: var(--color-success);
 }
 
+/* Elementos Base */
 body {
-  font-family: "Roboto", sans-serif;
-  background-color: var(--bg-color);
-  color: var(--text-color);
+  font-family: var(--font-primary);
+  background: var(--gradient-background);
+  color: var(--color-text-primary);
   margin: 0;
   padding: 0;
+  min-height: 100vh;
+  position: relative;
+}
+
+/* Grid Digital de Fundo */
+body::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: linear-gradient(
+      var(--color-primary-glow) 1px,
+      transparent 1px
+    ),
+    linear-gradient(90deg, var(--color-primary-glow) 1px, transparent 1px);
+  background-size: 50px 50px;
+  opacity: 0.05;
+  pointer-events: none;
+  z-index: -1;
 }
 
 header {
   background-color: var(--card-color);
   padding: 1rem 2rem;
   border-bottom: 2px solid var(--border-color);
-  text-align: center;
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+.header-content {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2rem;
+  padding-left: 2rem; /* Compensa o espaço do botão do menu */
+}
+
+.company-logo {
+  height: 40px;
+  width: auto;
+  margin-right: 1rem;
 }
 
 .dashboard-container {
@@ -351,17 +396,40 @@ h2 {
 }
 
 /* NOVOS ESTILOS PARA SELEÇÃO DE ROTA */
+.route-controls {
+  background-color: var(--card-color);
+  padding: 1.5rem;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  margin-top: 1rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2rem;
+  align-items: center;
+}
+
 .route-selection {
+  flex: 2;
+  min-width: 300px;
+  display: flex;
+  flex-direction: row;
+  gap: 1rem;
+  align-items: center;
+}
+
+.route-selection-group {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  margin-bottom: 1rem;
+  flex: 1;
 }
+
 .route-selection label {
   font-size: 0.9rem;
   font-weight: 700;
   color: var(--text-muted-color);
 }
+
 .select-route {
   width: 100%;
   padding: 0.5rem;
@@ -371,9 +439,19 @@ h2 {
   border-radius: 5px;
   font-size: 1rem;
 }
+
 .select-route:disabled {
   background-color: #333;
   cursor: not-allowed;
+}
+
+.controls-container {
+  flex: 1;
+  min-width: 200px;
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  align-items: center;
 }
 
 /* ===== GERENCIAMENTO DE TAGS RFID ===== */

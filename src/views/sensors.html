@@ -9,11 +9,18 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Orbitron:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/icon?family=Material+Icons"
       rel="stylesheet"
     />
   </head>
   <body>
+    <!-- Grid Digital de Fundo -->
+    <div class="digital-grid"></div>
+
     <header>
       <button
         id="drawer-toggle"
@@ -21,9 +28,12 @@
         aria-label="Abrir menu"
         aria-expanded="false"
       >
-        ☰
+        <span class="material-icons">menu</span>
       </button>
-      <h1>Sensores - AGV 01</h1>
+      <div class="header-content">
+        <img src="img/logo.png" alt="Logo da Empresa" class="company-logo" />
+        <h1>SENSORES AGV-01</h1>
+      </div>
     </header>
 
     <!-- LATERAL DRAWER (esquerda) -->
@@ -68,8 +78,25 @@
         <!-- Card de Visualização 3D -->
         <div class="info-card sensors-3d-card">
           <h3>🎯 Visualização 3D - Sensores</h3>
-          <div id="distance-3d-container" class="distance-3d-container">
+          <div
+            id="distance-3d-container"
+            class="distance-3d-container glow-effect"
+          >
             <canvas id="distance-3d-canvas"></canvas>
+            <div class="sensor-stats">
+              <div class="stat-item">
+                <span class="material-icons">speed</span>
+                <span class="stat-value">Tempo Real</span>
+              </div>
+              <div class="stat-item">
+                <span class="material-icons">radar</span>
+                <span class="stat-value">3 Sensores</span>
+              </div>
+              <div class="stat-item">
+                <span class="material-icons">priority_high</span>
+                <span class="stat-value danger-text">Alerta: 20cm</span>
+              </div>
+            </div>
           </div>
           <div class="distance-3d-legend">
             <div class="legend-item">
@@ -96,15 +123,24 @@
           <h3>📏 Sensores de Distância</h3>
           <div class="distance-sensors">
             <div class="distance-item">
-              <span class="distance-label">⬅️ Esquerda:</span>
+              <span class="distance-label">
+                <span class="material-icons">keyboard_arrow_left</span>
+                Esquerda
+              </span>
               <span id="distance-left" class="distance-value">-- cm</span>
             </div>
             <div class="distance-item">
-              <span class="distance-label">⬆️ Centro:</span>
+              <span class="distance-label">
+                <span class="material-icons">keyboard_arrow_up</span>
+                Centro
+              </span>
               <span id="distance-center" class="distance-value">-- cm</span>
             </div>
             <div class="distance-item">
-              <span class="distance-label">➡️ Direita:</span>
+              <span class="distance-label">
+                <span class="material-icons">keyboard_arrow_right</span>
+                Direita
+              </span>
               <span id="distance-right" class="distance-value">-- cm</span>
             </div>
           </div>
