@@ -9,7 +9,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Elementos da leitura atual
   const rfidDataElement = document.getElementById("rfid-data");
-  const btnCopyTagToRegister = document.getElementById("btn-copy-tag-to-register");
+  const btnCopyTagToRegister = document.getElementById(
+    "btn-copy-tag-to-register"
+  );
+
+  // Drawer behavior is handled by js/drawer.js (shared)
 
   /**
    * Carrega e exibe todas as tags cadastradas
@@ -34,7 +38,8 @@ document.addEventListener("DOMContentLoaded", () => {
    */
   function displayTags(tags) {
     if (tags.length === 0) {
-      rfidList.innerHTML = '<p class="rfid-list-empty">Nenhum item cadastrado</p>';
+      rfidList.innerHTML =
+        '<p class="rfid-list-empty">Nenhum item cadastrado</p>';
       return;
     }
 
@@ -109,7 +114,9 @@ document.addEventListener("DOMContentLoaded", () => {
    */
   async function handleSaveTag(event) {
     const tagId = event.target.dataset.tagId;
-    const input = document.querySelector(`.rfid-item-name-input[data-tag-id="${tagId}"]`);
+    const input = document.querySelector(
+      `.rfid-item-name-input[data-tag-id="${tagId}"]`
+    );
     const newName = input.value.trim();
 
     if (!newName) {
