@@ -684,6 +684,7 @@ document.addEventListener("DOMContentLoaded", () => {
     } else {
       selectInicio.value = selectDestino.value;
       localStorage.setItem("currentAgvPosition", selectDestino.value);
+      console.log("[SERVER] Posição do AGV salva: ", selectDestino.value);
     }
   }
 
@@ -747,7 +748,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // Força o envio de uma rota para o "Branco"
-    selectInicio.value = ultimoNo;
+    selectInicio.value = localStorage.getItem("currentAgvPosition");
     selectDestino.value = "Branco";
     enviarRota();
   });
