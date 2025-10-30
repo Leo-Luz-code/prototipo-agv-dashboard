@@ -43,24 +43,35 @@ class IMUSensor {
     console.log("[Socket.IO] 📐 Dados IMU recebidos:", data);
 
     if (data && data.accel && data.gyro) {
-      // Atualiza acelerômetro
-      this.accelX.textContent = data.accel.x.toFixed(2);
-      this.accelY.textContent = data.accel.y.toFixed(2);
-      this.accelZ.textContent = data.accel.z.toFixed(2);
+      // Atualiza acelerômetro com animação
+      this.updateValue(this.accelX, data.accel.x.toFixed(2));
+      this.updateValue(this.accelY, data.accel.y.toFixed(2));
+      this.updateValue(this.accelZ, data.accel.z.toFixed(2));
 
-      // Atualiza giroscópio
-      this.gyroX.textContent = data.gyro.x.toFixed(2);
-      this.gyroY.textContent = data.gyro.y.toFixed(2);
-      this.gyroZ.textContent = data.gyro.z.toFixed(2);
+      // Atualiza giroscópio com animação
+      this.updateValue(this.gyroX, data.gyro.x.toFixed(2));
+      this.updateValue(this.gyroY, data.gyro.y.toFixed(2));
+      this.updateValue(this.gyroZ, data.gyro.z.toFixed(2));
 
       // Atualiza temperatura se disponível
       if (data.temp !== undefined) {
-        this.temp.textContent = data.temp.toFixed(2);
+        this.updateValue(this.temp, data.temp.toFixed(2) + " °C");
       }
 
       console.log("[Socket.IO] ✅ Dados IMU atualizados");
     } else {
       console.warn("[Socket.IO] ⚠️ Dados IMU inválidos ou ausentes:", data);
+    }
+  }
+
+  // Atualiza valor com animação
+  updateValue(element, newValue) {
+    if (element.textContent !== newValue) {
+      element.classList.add("updating");
+      element.textContent = newValue;
+      setTimeout(() => {
+        element.classList.remove("updating");
+      }, 300);
     }
   }
 }

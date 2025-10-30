@@ -91,8 +91,8 @@ class DistanceSensor {
       ) {
         this.distance3D.updateSensorData(
           parseFloat(centro) || 0,
-          parseFloat(direita) || 0,
-          parseFloat(esquerda) || 0,
+          parseFloat(direita) || 0,   // right sensor data (azul - direita)
+          parseFloat(esquerda) || 0,  // left sensor data (verde - esquerda)
           temPerigo
         );
       }

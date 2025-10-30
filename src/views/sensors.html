@@ -150,43 +150,58 @@
         <div id="imu-card" class="info-card">
           <h3>📐 Acelerômetro/Giroscópio (MPU6050)</h3>
 
-          <div class="sensor-group">
-            <h4>Aceleração (m/s²)</h4>
-            <div class="sensor-reading">
-              <span>X:</span>
-              <p id="imu-accel-x" class="value">0.00</p>
-            </div>
-            <div class="sensor-reading">
-              <span>Y:</span>
-              <p id="imu-accel-y" class="value">0.00</p>
-            </div>
-            <div class="sensor-reading">
-              <span>Z:</span>
-              <p id="imu-accel-z" class="value">0.00</p>
-            </div>
-          </div>
-
-          <div class="sensor-group">
-            <h4>Giroscópio (°/s)</h4>
-            <div class="sensor-reading">
-              <span>X:</span>
-              <p id="imu-gyro-x" class="value">0.00</p>
-            </div>
-            <div class="sensor-reading">
-              <span>Y:</span>
-              <p id="imu-gyro-y" class="value">0.00</p>
-            </div>
-            <div class="sensor-reading">
-              <span>Z:</span>
-              <p id="imu-gyro-z" class="value">0.00</p>
+          <div class="imu-section">
+            <h4 class="imu-section-title">
+              <span class="material-icons">speed</span>
+              Aceleração (m/s²)
+            </h4>
+            <div class="imu-grid">
+              <div class="imu-item imu-x">
+                <span class="imu-label">Eixo X</span>
+                <span id="imu-accel-x" class="imu-value">0.00</span>
+              </div>
+              <div class="imu-item imu-y">
+                <span class="imu-label">Eixo Y</span>
+                <span id="imu-accel-y" class="imu-value">0.00</span>
+              </div>
+              <div class="imu-item imu-z">
+                <span class="imu-label">Eixo Z</span>
+                <span id="imu-accel-z" class="imu-value">0.00</span>
+              </div>
             </div>
           </div>
 
-          <div class="sensor-group">
-            <h4>Temperatura (°C)</h4>
-            <div class="sensor-reading">
-              <span>Temp:</span>
-              <p id="imu-temp" class="value">0.00</p>
+          <div class="imu-section">
+            <h4 class="imu-section-title">
+              <span class="material-icons">360</span>
+              Giroscópio (°/s)
+            </h4>
+            <div class="imu-grid">
+              <div class="imu-item imu-x">
+                <span class="imu-label">Eixo X</span>
+                <span id="imu-gyro-x" class="imu-value">0.00</span>
+              </div>
+              <div class="imu-item imu-y">
+                <span class="imu-label">Eixo Y</span>
+                <span id="imu-gyro-y" class="imu-value">0.00</span>
+              </div>
+              <div class="imu-item imu-z">
+                <span class="imu-label">Eixo Z</span>
+                <span id="imu-gyro-z" class="imu-value">0.00</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="imu-section">
+            <h4 class="imu-section-title">
+              <span class="material-icons">thermostat</span>
+              Temperatura
+            </h4>
+            <div class="imu-temp-container">
+              <div class="imu-item imu-temp">
+                <span class="imu-label">Temp. Sensor</span>
+                <span id="imu-temp" class="imu-value">-- °C</span>
+              </div>
             </div>
           </div>
         </div>
