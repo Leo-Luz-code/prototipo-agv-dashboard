@@ -27,11 +27,16 @@
 #define PIN_MOSI    3   // SPI MOSI
 #define PIN_RST     0   // Reset do MFRC522
 
-// ========== PINAGEM SENSORES DE DISTÂNCIA (I2C) ==========
+// ========== PINAGEM SENSORES DE DISTÂNCIA (I2C0) ==========
 #define I2C_PORT        i2c0
 #define I2C_SDA_PIN     20
 #define I2C_SCL_PIN     21
 #define NUM_SENSORS     3
+
+// ========== PINAGEM MPU6050 (I2C1) ==========
+#define MPU_I2C_PORT    i2c1
+#define MPU_SDA_PIN     18
+#define MPU_SCL_PIN     19
 
 // Canais do multiplexador TCA9548A para cada sensor
 #define SENSOR_CHANNEL_LEFT     0   // Esquerda
@@ -47,5 +52,9 @@
 // ========== FILTRO DE MEDIÇÃO ==========
 #define FILTER_SIZE             10      // Tamanho do buffer de média móvel
 #define DISTANCE_OFFSET         13      // Offset de calibração do sensor (mm)
+
+// ========== CONFIGURAÇÕES MPU6050 ==========
+#define MPU6050_ADDR        0x68    // Endereço I2C
+#define MQTT_TOPIC_IMU      "agv/imu"
 
 #endif // CONFIG_H

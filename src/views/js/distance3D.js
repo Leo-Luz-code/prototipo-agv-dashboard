@@ -119,10 +119,10 @@ class Distance3DVisualization {
     this.centerObstacle.position.y = 0.5;
     this.scene.add(this.centerObstacle);
 
-    // Raio do sensor DIREITA (Verde)
+    // Raio do sensor DIREITA (Azul)
     const rightBeamGeometry = new THREE.CylinderGeometry(0.05, 0.05, 1, 8);
     const rightBeamMaterial = new THREE.MeshBasicMaterial({
-      color: 0x44ff44,
+      color: 0x4444ff,
       transparent: true,
       opacity: 0.6
     });
@@ -133,8 +133,8 @@ class Distance3DVisualization {
     // Obstáculo detectado pelo sensor direito
     const rightObstacleGeometry = new THREE.BoxGeometry(0.3, 1, 0.8);
     const rightObstacleMaterial = new THREE.MeshPhongMaterial({
-      color: 0x44ff44,
-      emissive: 0x44ff44,
+      color: 0x4444ff,
+      emissive: 0x4444ff,
       emissiveIntensity: 0.4,
       transparent: true,
       opacity: 0.7
@@ -143,10 +143,10 @@ class Distance3DVisualization {
     this.rightObstacle.position.y = 0.5;
     this.scene.add(this.rightObstacle);
 
-    // Raio do sensor ESQUERDA (Azul)
+    // Raio do sensor ESQUERDA (Verde)
     const leftBeamGeometry = new THREE.CylinderGeometry(0.05, 0.05, 1, 8);
     const leftBeamMaterial = new THREE.MeshBasicMaterial({
-      color: 0x4444ff,
+      color: 0x44ff44,
       transparent: true,
       opacity: 0.6
     });
@@ -157,8 +157,8 @@ class Distance3DVisualization {
     // Obstáculo detectado pelo sensor esquerdo
     const leftObstacleGeometry = new THREE.BoxGeometry(0.3, 1, 0.8);
     const leftObstacleMaterial = new THREE.MeshPhongMaterial({
-      color: 0x4444ff,
-      emissive: 0x4444ff,
+      color: 0x44ff44,
+      emissive: 0x44ff44,
       emissiveIntensity: 0.4,
       transparent: true,
       opacity: 0.7
