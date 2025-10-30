@@ -145,6 +145,48 @@
             </div>
           </div>
         </div>
+
+        <!-- CARD IMU MPU6050 -->
+        <div id="imu-card" class="info-card">
+          <h3>📐 Acelerômetro/Giroscópio (MPU6050)</h3>
+
+          <div class="sensor-group">
+            <h4>Aceleração (m/s²)</h4>
+            <div class="sensor-reading">
+              <span>X:</span>
+              <p id="imu-accel-x" class="value">0.00</p>
+            </div>
+            <div class="sensor-reading">
+              <span>Y:</span>
+              <p id="imu-accel-y" class="value">0.00</p>
+            </div>
+            <div class="sensor-reading">
+              <span>Z:</span>
+              <p id="imu-accel-z" class="value">0.00</p>
+            </div>
+          </div>
+
+          <div class="sensor-group">
+            <h4>Giroscópio (°/s)</h4>
+            <div class="sensor-reading">
+              <span>X:</span>
+              <p id="imu-gyro-x" class="value">0.00</p>
+            </div>
+            <div class="sensor-reading">
+              <span>Y:</span>
+              <p id="imu-gyro-y" class="value">0.00</p>
+            </div>
+            <div class="sensor-reading">
+              <span>Z:</span>
+              <p id="imu-gyro-z" class="value">0.00</p>
+            </div>
+          </div>
+
+          <div class="sensor-reading">
+            <span>Temperatura:</span>
+            <p id="imu-temp" class="value">--°C</p>
+          </div>
+        </div>
       </div>
     </main>
 
@@ -154,6 +196,7 @@
     <script src="js/drawer.js"></script>
     <!-- Módulos de Sensores -->
     <script src="js/sensors/distance-sensor.js"></script>
+    <script src="js/sensors/imu-sensor.js"></script>
     <!-- Adicione novos módulos de sensores aqui -->
 
     <!-- Gerenciador Principal -->

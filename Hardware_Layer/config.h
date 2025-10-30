@@ -48,4 +48,8 @@
 #define FILTER_SIZE             10      // Tamanho do buffer de média móvel
 #define DISTANCE_OFFSET         13      // Offset de calibração do sensor (mm)
 
+// ========== CONFIGURAÇÕES MPU6050 ==========
+#define MPU6050_ADDR        0x68    // Endereço I2C
+#define MQTT_TOPIC_IMU      "agv/imu"
+
 #endif // CONFIG_H

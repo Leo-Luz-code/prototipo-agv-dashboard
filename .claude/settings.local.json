@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dir)",
+      "Bash(ninja)",
+      "Read(//c//**)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
