@@ -7,9 +7,9 @@ typedef struct {
     float accel_x; //Aceleração no eixo X (m/s²)
     float accel_y; //Aceleração no eixo Y (m/s²)
     float accel_z; //Aceleração no eixo Z (m/s²)
-    float gyro_x;  //Velocidade angular no eixo X (rad/s)
-    float gyro_y;  //Velocidade angular no eixo Y (rad/s)
-    float gyro_z;  //Velocidade angular no eixo Z (rad/s)
+    float gyro_x;  //Velocidade angular no eixo X (°/s)
+    float gyro_y;  //Velocidade angular no eixo Y (°/s)
+    float gyro_z;  //Velocidade angular no eixo Z (°/s)
     float temp_c;  //Temperatura (°C)
 } mpu6050_data_t;
 

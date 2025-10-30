@@ -3,7 +3,9 @@
     "allow": [
       "Bash(dir)",
       "Bash(ninja)",
-      "Read(//c//**)"
+      "Read(//c//**)",
+      "Read(//c/Users/Admin/.pico-sdk/ninja/**)",
+      "Bash(export PATH=\"/c/Users/Admin/.pico-sdk/ninja/v1.12.1:$PATH\")"
     ],
     "deny": [],
     "ask": []

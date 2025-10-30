@@ -76,8 +76,13 @@ float last_published_distance_left = 0.0;
 float last_published_distance_center = 0.0;
 float last_published_distance_right = 0.0;
 
+// Timestamp da última publicação IMU forçada
+absolute_time_t last_forced_imu_publish;
+
 // Threshold de variação (15%)
 #define VARIATION_THRESHOLD 0.15f
+// Intervalo para publicação forçada do IMU (5 segundos)
+#define IMU_FORCED_PUBLISH_INTERVAL 5000000
 
 // ========== PROTÓTIPOS DE FUNÇÕES ==========
 
@@ -615,14 +620,21 @@ int main() {
     PCD_Init(mfrc, spi0);
     printf("[RFID] Leitor inicializado com sucesso!\n");
 
-    // PASSO 4: Configurar sensores de distância
-    printf("\n[DISTANCIA] Configurando I2C e sensores...\n");
+    // PASSO 4: Configurar sensores de distância (I2C0)
+    printf("\n[DISTANCIA] Configurando I2C0 e sensores...\n");
     setup_i2c_distance();
     init_distance_sensors();
 
-    // PASSO 5: Configurar MPU6050
-    printf("\n[IMU] Configurando MPU6050...\n");
-    mpu6050_init(I2C_PORT);
+    // PASSO 5: Configurar MPU6050 (I2C1 - SEPARADO!)
+    printf("\n[IMU] Configurando I2C1 para MPU6050...\n");
+    i2c_init(MPU_I2C_PORT, 400 * 1000);
+    gpio_set_function(MPU_SDA_PIN, GPIO_FUNC_I2C);
+    gpio_set_function(MPU_SCL_PIN, GPIO_FUNC_I2C);
+    gpio_pull_up(MPU_SDA_PIN);
+    gpio_pull_up(MPU_SCL_PIN);
+    printf("[IMU] I2C1 configurado: SDA=GP%d, SCL=GP%d\n", MPU_SDA_PIN, MPU_SCL_PIN);
+
+    mpu6050_init(MPU_I2C_PORT);
     printf("[IMU] MPU6050 inicializado!\n");
 
     printf("\n========================================\n");
@@ -638,6 +650,7 @@ int main() {
     // Inicializa controle de tempo
     last_read_time = get_absolute_time();
     last_reconnect_attempt = get_absolute_time();
+    last_forced_imu_publish = get_absolute_time();
     absolute_time_t last_status = get_absolute_time();
     absolute_time_t last_distance_publish = get_absolute_time();
     absolute_time_t last_imu_publish = get_absolute_time();
@@ -683,43 +696,37 @@ int main() {
             }
         }
 
-        // Lê IMU a cada 500ms, mas só publica se houver variação significativa
-        if (mqtt_connected && absolute_time_diff_us(last_imu_publish, now) > 500000) {
+        // Lê e publica IMU a cada 2 segundos (publicação contínua garantida)
+        if (mqtt_connected && absolute_time_diff_us(last_imu_publish, now) > 2000000) {
             mpu6050_read_data(&imu_data);
-            last_imu_publish = now;
 
-            // Só publica se houver variação significativa
-            if (should_publish_imu()) {
-                char payload[256];
-                snprintf(payload, sizeof(payload),
-                         "{\"accel\":{\"x\":%.2f,\"y\":%.2f,\"z\":%.2f},"
-                         "\"gyro\":{\"x\":%.2f,\"y\":%.2f,\"z\":%.2f},"
-                         "\"temp\":%.1f,\"timestamp\":%lu}",
-                         imu_data.accel_x, imu_data.accel_y, imu_data.accel_z,
-                         imu_data.gyro_x, imu_data.gyro_y, imu_data.gyro_z,
-                         imu_data.temp_c, to_ms_since_boot(get_absolute_time()));
+            char payload[256];
+            snprintf(payload, sizeof(payload),
+                     "{\"accel\":{\"x\":%.2f,\"y\":%.2f,\"z\":%.2f},"
+                     "\"gyro\":{\"x\":%.2f,\"y\":%.2f,\"z\":%.2f},"
+                     "\"temp\":%.2f,"
+                     "\"timestamp\":%lu}",
+                     imu_data.accel_x, imu_data.accel_y, imu_data.accel_z,
+                     imu_data.gyro_x, imu_data.gyro_y, imu_data.gyro_z,
+                     imu_data.temp_c,
+                     to_ms_since_boot(get_absolute_time()));
 
-                err_t err = mqtt_publish(mqtt_client, MQTT_TOPIC_IMU, payload, strlen(payload),
-                            1, 0, mqtt_pub_request_cb, NULL);
+            err_t err = mqtt_publish(mqtt_client, MQTT_TOPIC_IMU, payload, strlen(payload),
+                        1, 0, mqtt_pub_request_cb, NULL);
 
-                if (err == ERR_OK) {
-                    printf("[IMU] Dados publicados (variacao detectada)\n");
-                    // Atualiza últimos valores publicados
-                    last_published_accel_x = imu_data.accel_x;
-                    last_published_accel_y = imu_data.accel_y;
-                    last_published_accel_z = imu_data.accel_z;
-                    last_published_gyro_x = imu_data.gyro_x;
-                    last_published_gyro_y = imu_data.gyro_y;
-                    last_published_gyro_z = imu_data.gyro_z;
-                } else {
-                    printf("[MQTT] ERRO ao publicar IMU! Codigo: %d\n", err);
-                    if (err == ERR_CONN) {
-                        mqtt_connected = false;
-                    }
+            if (err == ERR_OK) {
+                printf("[IMU] Dados publicados: Accel(%.2f,%.2f,%.2f) Gyro(%.2f,%.2f,%.2f)\n",
+                       imu_data.accel_x, imu_data.accel_y, imu_data.accel_z,
+                       imu_data.gyro_x, imu_data.gyro_y, imu_data.gyro_z);
+                last_imu_publish = now;
+            } else {
+                printf("[MQTT] ERRO ao publicar IMU! Codigo: %d\n", err);
+                if (err == ERR_CONN) {
+                    mqtt_connected = false;
                 }
-                cyw43_arch_poll();
-                sleep_ms(10);
             }
+            cyw43_arch_poll();
+            sleep_ms(10);
         }
 
         // Publica status periodicamente (a cada 30 segundos)

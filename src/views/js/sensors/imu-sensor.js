@@ -53,9 +53,9 @@ class IMUSensor {
       this.gyroY.textContent = data.gyro.y.toFixed(2);
       this.gyroZ.textContent = data.gyro.z.toFixed(2);
 
-      // Atualiza temperatura
-      if (data.temp !== undefined && data.temp !== null) {
-        this.temp.textContent = `${data.temp.toFixed(1)}°C`;
+      // Atualiza temperatura se disponível
+      if (data.temp !== undefined) {
+        this.temp.textContent = data.temp.toFixed(2);
       }
 
       console.log("[Socket.IO] ✅ Dados IMU atualizados");
