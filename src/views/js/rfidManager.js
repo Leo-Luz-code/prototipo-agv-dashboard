@@ -9,11 +9,67 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Elementos da leitura atual
   const rfidDataElement = document.getElementById("rfid-data");
+  const rfidItemNameElement = document.getElementById("rfid-item-name");
   const btnCopyTagToRegister = document.getElementById(
     "btn-copy-tag-to-register"
   );
 
+  // Inicializar conexão Socket.IO
+  const socket = io();
+  console.log("[RFID MANAGER] 🔌 Socket.IO inicializado");
+
   // Drawer behavior is handled by js/drawer.js (shared)
+
+  // ========== LISTENERS SOCKET.IO ==========
+
+  /**
+   * Listener para atualizar dados de RFID em tempo real
+   */
+  socket.on("agv/status", (status) => {
+    console.log("[RFID MANAGER] 📡 Status recebido:", status);
+
+    // Extrai dados de RFID do status
+    const rfidTag = status.sensores?.rfid || "Nenhuma";
+    const rfidItemName = status.sensores?.rfidItemName || null;
+
+    console.log(`[RFID MANAGER] 🏷️ Tag: ${rfidTag}`);
+    if (rfidItemName) {
+      console.log(`[RFID MANAGER] 📦 Item: ${rfidItemName}`);
+    }
+
+    // Atualiza elemento da tag
+    if (rfidDataElement) {
+      rfidDataElement.textContent = rfidTag;
+      console.log(`[RFID MANAGER] ✅ Elemento #rfid-data atualizado para: ${rfidTag}`);
+    }
+
+    // Atualiza elemento do nome do item
+    if (rfidItemNameElement) {
+      if (rfidTag && rfidTag !== "Nenhuma") {
+        if (rfidItemName) {
+          rfidItemNameElement.textContent = rfidItemName;
+          rfidItemNameElement.style.color = "var(--success-color)";
+        } else {
+          rfidItemNameElement.textContent = "Tag não cadastrada";
+          rfidItemNameElement.style.color = "var(--warning-color)";
+        }
+      } else {
+        rfidItemNameElement.textContent = "Aguardando leitura...";
+        rfidItemNameElement.style.color = "";
+      }
+      console.log(`[RFID MANAGER] ✅ Elemento #rfid-item-name atualizado`);
+    }
+  });
+
+  socket.on("disconnect", () => {
+    console.log("[RFID MANAGER] ❌ Socket.IO desconectado!");
+  });
+
+  socket.on("connect", () => {
+    console.log("[RFID MANAGER] ✅ Socket.IO conectado!");
+  });
+
+  // ========== FIM DOS LISTENERS ==========
 
   /**
    * Carrega e exibe todas as tags cadastradas

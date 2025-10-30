@@ -21,6 +21,11 @@ class SensorsManager {
       this.activeSensors.distance = new DistanceSensor();
     }
 
+    // Inicializa o sensor IMU se o card estiver presente
+    if (document.getElementById("imu-card")) {
+      this.activeSensors.imu = new IMUSensor();
+    }
+
     // Aqui você pode adicionar a inicialização de outros sensores
     // seguindo o mesmo padrão, por exemplo:
     //

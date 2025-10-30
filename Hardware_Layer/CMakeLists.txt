@@ -45,6 +45,11 @@ file(GLOB_RECURSE DISTANCE_SOURCES
     "lib/vl53l0x/platform/src/*.c"
 )
 
+# Biblioteca do MPU6050
+set(IMU_SOURCES
+    lib/mpu6050.c
+)
+
 # Arquivo principal
 set(MAIN_SOURCE
     main.c
@@ -56,6 +61,7 @@ add_executable(Hardware_Layer
     ${MAIN_SOURCE}
     ${RFID_SOURCES}
     ${DISTANCE_SOURCES}
+    ${IMU_SOURCES}
 )
 
 # ========== CONFIGURAÇÕES DO PROGRAMA ==========

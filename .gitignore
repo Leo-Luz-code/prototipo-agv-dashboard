@@ -1,2 +1,4 @@
 node_modules
-.vscode
+.vscode/
+# Ignorar arquivos reservados
+nul

@@ -9,6 +9,12 @@ let agvStatus = {
       direita: 0,
       timestamp: null,
       unidade: "cm"
+    },
+    imu: {
+      accel: { x: 0, y: 0, z: 0 },
+      gyro: { x: 0, y: 0, z: 0 },
+      temp: 0,
+      timestamp: null
     }
   },
   ultimaAtualizacao: new Date(),

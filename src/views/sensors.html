@@ -145,6 +145,66 @@
             </div>
           </div>
         </div>
+
+        <!-- CARD IMU MPU6050 -->
+        <div id="imu-card" class="info-card">
+          <h3>📐 Acelerômetro/Giroscópio (MPU6050)</h3>
+
+          <div class="imu-section">
+            <h4 class="imu-section-title">
+              <span class="material-icons">speed</span>
+              Aceleração (m/s²)
+            </h4>
+            <div class="imu-grid">
+              <div class="imu-item imu-x">
+                <span class="imu-label">Eixo X</span>
+                <span id="imu-accel-x" class="imu-value">0.00</span>
+              </div>
+              <div class="imu-item imu-y">
+                <span class="imu-label">Eixo Y</span>
+                <span id="imu-accel-y" class="imu-value">0.00</span>
+              </div>
+              <div class="imu-item imu-z">
+                <span class="imu-label">Eixo Z</span>
+                <span id="imu-accel-z" class="imu-value">0.00</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="imu-section">
+            <h4 class="imu-section-title">
+              <span class="material-icons">360</span>
+              Giroscópio (°/s)
+            </h4>
+            <div class="imu-grid">
+              <div class="imu-item imu-x">
+                <span class="imu-label">Eixo X</span>
+                <span id="imu-gyro-x" class="imu-value">0.00</span>
+              </div>
+              <div class="imu-item imu-y">
+                <span class="imu-label">Eixo Y</span>
+                <span id="imu-gyro-y" class="imu-value">0.00</span>
+              </div>
+              <div class="imu-item imu-z">
+                <span class="imu-label">Eixo Z</span>
+                <span id="imu-gyro-z" class="imu-value">0.00</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="imu-section">
+            <h4 class="imu-section-title">
+              <span class="material-icons">thermostat</span>
+              Temperatura
+            </h4>
+            <div class="imu-temp-container">
+              <div class="imu-item imu-temp">
+                <span class="imu-label">Temp. Sensor</span>
+                <span id="imu-temp" class="imu-value">-- °C</span>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </main>
 
@@ -154,6 +214,7 @@
     <script src="js/drawer.js"></script>
     <!-- Módulos de Sensores -->
     <script src="js/sensors/distance-sensor.js"></script>
+    <script src="js/sensors/imu-sensor.js"></script>
     <!-- Adicione novos módulos de sensores aqui -->
 
     <!-- Gerenciador Principal -->

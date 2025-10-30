@@ -174,6 +174,32 @@ broker.on("publish", async (packet, client) => {
         console.error("[BROKER MQTT] ❌ Erro ao processar distância:", e);
       }
     }
+
+    // Processar dados IMU (MPU6050)
+    if (topic === 'agv/imu') {
+      try {
+        const data = JSON.parse(payload);
+        console.log(`[BROKER MQTT] 📐 IMU: Accel(${data.accel.x.toFixed(2)}, ${data.accel.y.toFixed(2)}, ${data.accel.z.toFixed(2)})`);
+
+        updateStatus({
+          sensores: {
+            imu: {
+              accel: data.accel,
+              gyro: data.gyro,
+              temp: data.temp,
+              timestamp: data.timestamp || Date.now()
+            }
+          }
+        });
+
+        const fullStatus = getStatusFromAGV();
+        const { broadcast } = await import('../services/socketService.js');
+        broadcast('agv/imu', fullStatus.sensores.imu);
+        console.log('[BROKER MQTT] ✅ Dados IMU transmitidos!');
+      } catch (e) {
+        console.error('[BROKER MQTT] ❌ Erro ao processar IMU:', e);
+      }
+    }
   }
 });
 

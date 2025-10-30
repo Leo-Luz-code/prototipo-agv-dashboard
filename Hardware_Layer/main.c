@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
+#include <math.h>
 #include "pico/stdlib.h"
 #include "pico/cyw43_arch.h"
 #include "hardware/spi.h"
@@ -21,6 +22,9 @@
 #include "tca9548a.h"
 #include "vl53l0x/core/inc/vl53l0x_api.h"
 #include "vl53l0x/platform/inc/vl53l0x_rp2040.h"
+
+// Biblioteca do MPU6050
+#include "mpu6050.h"
 
 // Configurações do projeto
 #include "config.h"
@@ -57,6 +61,29 @@ float distancia_esquerda = 0.0;
 float distancia_centro = 0.0;
 float distancia_direita = 0.0;
 
+// Dados do MPU6050
+mpu6050_data_t imu_data = {0};
+
+// Últimos valores publicados (para filtro de variação)
+float last_published_accel_x = 0.0;
+float last_published_accel_y = 0.0;
+float last_published_accel_z = 0.0;
+float last_published_gyro_x = 0.0;
+float last_published_gyro_y = 0.0;
+float last_published_gyro_z = 0.0;
+
+float last_published_distance_left = 0.0;
+float last_published_distance_center = 0.0;
+float last_published_distance_right = 0.0;
+
+// Timestamp da última publicação IMU forçada
+absolute_time_t last_forced_imu_publish;
+
+// Threshold de variação (15%)
+#define VARIATION_THRESHOLD 0.15f
+// Intervalo para publicação forçada do IMU (5 segundos)
+#define IMU_FORCED_PUBLISH_INTERVAL 5000000
+
 // ========== PROTÓTIPOS DE FUNÇÕES ==========
 
 // Inicialização
@@ -80,6 +107,10 @@ void uid_to_hex_string(const uint8_t *uid, uint8_t size, char *output);
 void read_distance_sensors(void);
 void publish_distance_data(void);
 VL53L0X_Error singleRanging(VL53L0X_Dev_t *pDevice, uint16_t *MeasuredData);
+bool should_publish_distance(void);
+
+// Operações IMU
+bool should_publish_imu(void);
 
 // Gerais
 void publish_status(const char *status);
@@ -245,6 +276,37 @@ void read_distance_sensors(void) {
     }
 }
 
+bool should_publish_distance(void) {
+    // Calcula variação percentual para cada sensor
+    float variation_left = 0.0;
+    float variation_center = 0.0;
+    float variation_right = 0.0;
+
+    // Evita divisão por zero - se o último valor foi 0, sempre publica
+    if (last_published_distance_left > 0.1) {
+        variation_left = fabsf(distancia_esquerda - last_published_distance_left) / last_published_distance_left;
+    } else {
+        variation_left = 1.0; // Força publicação se era 0
+    }
+
+    if (last_published_distance_center > 0.1) {
+        variation_center = fabsf(distancia_centro - last_published_distance_center) / last_published_distance_center;
+    } else {
+        variation_center = 1.0;
+    }
+
+    if (last_published_distance_right > 0.1) {
+        variation_right = fabsf(distancia_direita - last_published_distance_right) / last_published_distance_right;
+    } else {
+        variation_right = 1.0;
+    }
+
+    // Publica se qualquer sensor variou mais que o threshold
+    return (variation_left > VARIATION_THRESHOLD ||
+            variation_center > VARIATION_THRESHOLD ||
+            variation_right > VARIATION_THRESHOLD);
+}
+
 void publish_distance_data(void) {
     if (!mqtt_connected) {
         printf("[MQTT] Nao conectado, pulando publicacao de distancia...\n");
@@ -256,6 +318,11 @@ void publish_distance_data(void) {
         printf("[MQTT] Cliente nao esta pronto, pulando publicacao...\n");
         mqtt_connected = false;
         return;
+    }
+
+    // Verifica se houve variação significativa
+    if (!should_publish_distance()) {
+        return; // Não publica se variação for menor que 15%
     }
 
     char payload[256];
@@ -277,6 +344,11 @@ void publish_distance_data(void) {
         if (err == ERR_CONN) {
             mqtt_connected = false;
         }
+    } else {
+        // Atualiza últimos valores publicados
+        last_published_distance_left = distancia_esquerda;
+        last_published_distance_center = distancia_centro;
+        last_published_distance_right = distancia_direita;
     }
 }
 
@@ -440,6 +512,64 @@ void mqtt_reconnect(void) {
     mqtt_init_and_connect();
 }
 
+// ========== IMPLEMENTAÇÃO - FILTROS DE VARIAÇÃO ==========
+
+bool should_publish_imu(void) {
+    // Calcula variação percentual para cada eixo do acelerômetro e giroscópio
+    float variation_accel_x = 0.0;
+    float variation_accel_y = 0.0;
+    float variation_accel_z = 0.0;
+    float variation_gyro_x = 0.0;
+    float variation_gyro_y = 0.0;
+    float variation_gyro_z = 0.0;
+
+    // Acelerômetro - evita divisão por zero
+    if (fabsf(last_published_accel_x) > 0.1) {
+        variation_accel_x = fabsf(imu_data.accel_x - last_published_accel_x) / fabsf(last_published_accel_x);
+    } else {
+        variation_accel_x = 1.0; // Força publicação se era ~0
+    }
+
+    if (fabsf(last_published_accel_y) > 0.1) {
+        variation_accel_y = fabsf(imu_data.accel_y - last_published_accel_y) / fabsf(last_published_accel_y);
+    } else {
+        variation_accel_y = 1.0;
+    }
+
+    if (fabsf(last_published_accel_z) > 0.1) {
+        variation_accel_z = fabsf(imu_data.accel_z - last_published_accel_z) / fabsf(last_published_accel_z);
+    } else {
+        variation_accel_z = 1.0;
+    }
+
+    // Giroscópio - evita divisão por zero
+    if (fabsf(last_published_gyro_x) > 0.1) {
+        variation_gyro_x = fabsf(imu_data.gyro_x - last_published_gyro_x) / fabsf(last_published_gyro_x);
+    } else if (fabsf(imu_data.gyro_x) > 0.1) {
+        variation_gyro_x = 1.0; // Mudou de ~0 para algo significativo
+    }
+
+    if (fabsf(last_published_gyro_y) > 0.1) {
+        variation_gyro_y = fabsf(imu_data.gyro_y - last_published_gyro_y) / fabsf(last_published_gyro_y);
+    } else if (fabsf(imu_data.gyro_y) > 0.1) {
+        variation_gyro_y = 1.0;
+    }
+
+    if (fabsf(last_published_gyro_z) > 0.1) {
+        variation_gyro_z = fabsf(imu_data.gyro_z - last_published_gyro_z) / fabsf(last_published_gyro_z);
+    } else if (fabsf(imu_data.gyro_z) > 0.1) {
+        variation_gyro_z = 1.0;
+    }
+
+    // Publica se qualquer eixo variou mais que o threshold
+    return (variation_accel_x > VARIATION_THRESHOLD ||
+            variation_accel_y > VARIATION_THRESHOLD ||
+            variation_accel_z > VARIATION_THRESHOLD ||
+            variation_gyro_x > VARIATION_THRESHOLD ||
+            variation_gyro_y > VARIATION_THRESHOLD ||
+            variation_gyro_z > VARIATION_THRESHOLD);
+}
+
 // ========== FUNÇÃO PRINCIPAL ==========
 
 int main() {
@@ -490,10 +620,22 @@ int main() {
     PCD_Init(mfrc, spi0);
     printf("[RFID] Leitor inicializado com sucesso!\n");
 
-    // PASSO 4: Configurar sensores de distância
-    printf("\n[DISTANCIA] Configurando I2C e sensores...\n");
+    // PASSO 4: Configurar sensores de distância (I2C0)
+    printf("\n[DISTANCIA] Configurando I2C0 e sensores...\n");
     setup_i2c_distance();
     init_distance_sensors();
+
+    // PASSO 5: Configurar MPU6050 (I2C1 - SEPARADO!)
+    printf("\n[IMU] Configurando I2C1 para MPU6050...\n");
+    i2c_init(MPU_I2C_PORT, 400 * 1000);
+    gpio_set_function(MPU_SDA_PIN, GPIO_FUNC_I2C);
+    gpio_set_function(MPU_SCL_PIN, GPIO_FUNC_I2C);
+    gpio_pull_up(MPU_SDA_PIN);
+    gpio_pull_up(MPU_SCL_PIN);
+    printf("[IMU] I2C1 configurado: SDA=GP%d, SCL=GP%d\n", MPU_SDA_PIN, MPU_SCL_PIN);
+
+    mpu6050_init(MPU_I2C_PORT);
+    printf("[IMU] MPU6050 inicializado!\n");
 
     printf("\n========================================\n");
     printf("  Sistema pronto!\n");
@@ -501,14 +643,17 @@ int main() {
     printf("Topicos MQTT:\n");
     printf("  - RFID: %s\n", MQTT_TOPIC_RFID);
     printf("  - Distancia: %s\n", MQTT_TOPIC_DISTANCE);
+    printf("  - IMU: %s\n", MQTT_TOPIC_IMU);
     printf("  - Status: %s\n", MQTT_TOPIC_STATUS);
     printf("\nLendo sensores e publicando via MQTT...\n\n");
 
     // Inicializa controle de tempo
     last_read_time = get_absolute_time();
     last_reconnect_attempt = get_absolute_time();
+    last_forced_imu_publish = get_absolute_time();
     absolute_time_t last_status = get_absolute_time();
     absolute_time_t last_distance_publish = get_absolute_time();
+    absolute_time_t last_imu_publish = get_absolute_time();
 
     uint32_t loop_count = 0;
 
@@ -549,6 +694,39 @@ int main() {
                 }
                 PCD_StopCrypto1(mfrc);
             }
+        }
+
+        // Lê e publica IMU a cada 2 segundos (publicação contínua garantida)
+        if (mqtt_connected && absolute_time_diff_us(last_imu_publish, now) > 2000000) {
+            mpu6050_read_data(&imu_data);
+
+            char payload[256];
+            snprintf(payload, sizeof(payload),
+                     "{\"accel\":{\"x\":%.2f,\"y\":%.2f,\"z\":%.2f},"
+                     "\"gyro\":{\"x\":%.2f,\"y\":%.2f,\"z\":%.2f},"
+                     "\"temp\":%.2f,"
+                     "\"timestamp\":%lu}",
+                     imu_data.accel_x, imu_data.accel_y, imu_data.accel_z,
+                     imu_data.gyro_x, imu_data.gyro_y, imu_data.gyro_z,
+                     imu_data.temp_c,
+                     to_ms_since_boot(get_absolute_time()));
+
+            err_t err = mqtt_publish(mqtt_client, MQTT_TOPIC_IMU, payload, strlen(payload),
+                        1, 0, mqtt_pub_request_cb, NULL);
+
+            if (err == ERR_OK) {
+                printf("[IMU] Dados publicados: Accel(%.2f,%.2f,%.2f) Gyro(%.2f,%.2f,%.2f)\n",
+                       imu_data.accel_x, imu_data.accel_y, imu_data.accel_z,
+                       imu_data.gyro_x, imu_data.gyro_y, imu_data.gyro_z);
+                last_imu_publish = now;
+            } else {
+                printf("[MQTT] ERRO ao publicar IMU! Codigo: %d\n", err);
+                if (err == ERR_CONN) {
+                    mqtt_connected = false;
+                }
+            }
+            cyw43_arch_poll();
+            sleep_ms(10);
         }
 
         // Publica status periodicamente (a cada 30 segundos)
