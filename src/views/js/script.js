@@ -81,6 +81,7 @@ document.addEventListener("DOMContentLoaded", () => {
       console.log(
         `[Socket.IO] 🔄 Sincronizando posição: ${dropdownInicio.value} -> ${status.posicao}`
       );
+      // O setAgvPosition já vai salvar a posição no localStorage
       setAgvPosition(status.posicao, "Ocioso (Sincronizado)");
       dropdownInicio.value = status.posicao;
     } else {
@@ -315,6 +316,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const point = locations[nodeName];
     if (!point) return;
 
+    // Salva a posição atual no localStorage
+    localStorage.setItem("currentAgvPosition", nodeName);
+
     // Adiciona classe para remover transição, força o reflow, e remove a classe
     agvElement.classList.add("no-transition");
     agvElement.style.left = `${point.x}%`;
@@ -336,8 +340,16 @@ document.addEventListener("DOMContentLoaded", () => {
     currentRouteIndex = 0;
     clearTimeout(simulationTimeout);
     stopAllPulseAnimations();
-    setAgvPosition("Branco", "Ocioso");
+
+    // Recupera a última posição do AGV do localStorage, ou usa "Branco" como padrão
+    const lastPosition = localStorage.getItem("currentAgvPosition") || "Branco";
+    setAgvPosition(lastPosition, "Ocioso");
     enableControls();
+
+    // Atualiza o dropdown de início para a posição atual
+    if (selectInicio) {
+      selectInicio.value = lastPosition;
+    }
 
     // Não limpa a carga automaticamente no reset
     // A carga só é limpa quando o usuário clica em "Sem Carga"
@@ -671,6 +683,8 @@ document.addEventListener("DOMContentLoaded", () => {
       simulationTimeout = setTimeout(executeRouteStep, 3000); // 3 segundos por passo
     } else {
       selectInicio.value = selectDestino.value;
+      localStorage.setItem("currentAgvPosition", selectDestino.value);
+      console.log("[SERVER] Posição do AGV salva: ", selectDestino.value);
     }
   }
 
@@ -734,7 +748,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // Força o envio de uma rota para o "Branco"
-    selectInicio.value = ultimoNo;
+    selectInicio.value = localStorage.getItem("currentAgvPosition");
     selectDestino.value = "Branco";
     enviarRota();
   });
