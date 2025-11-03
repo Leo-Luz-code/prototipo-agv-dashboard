@@ -164,8 +164,8 @@ document.addEventListener("DOMContentLoaded", () => {
       if (distance3D && typeof distance3D.updateSensorData === "function") {
         distance3D.updateSensorData(
           parseFloat(centro) || 0,
-          parseFloat(direita) || 0,
-          parseFloat(esquerda) || 0,
+          parseFloat(esquerda) || 0,  // Invertido: dados da esquerda vão para right
+          parseFloat(direita) || 0,   // Invertido: dados da direita vão para left
           temPerigo // Passa se tem perigo ou não
         );
       }

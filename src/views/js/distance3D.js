@@ -58,13 +58,13 @@ class Distance3DVisualization {
     this.scene = new THREE.Scene();
     this.scene.background = new THREE.Color(0x0a0e14);
 
-    // Configurar câmera FIXA - Visão de cima/trás do AGV
+    // Configurar câmera FIXA - Visão de cima/trás do AGV (mais próxima)
     const aspect = this.canvas.clientWidth / this.canvas.clientHeight;
-    this.camera = new THREE.PerspectiveCamera(50, aspect, 0.1, 1000);
+    this.camera = new THREE.PerspectiveCamera(45, aspect, 0.1, 1000);
 
-    // Câmera posicionada atrás e acima do AGV, olhando para frente
-    this.camera.position.set(0, 12, -8);
-    this.camera.lookAt(0, 0, 5);
+    // Câmera mais próxima para ver melhor o carrinho maior
+    this.camera.position.set(0, 10, -10);
+    this.camera.lookAt(0, 0, 3);
 
     // Criar renderizador
     this.renderer = new THREE.WebGLRenderer({
@@ -75,37 +75,115 @@ class Distance3DVisualization {
     this.renderer.setSize(this.canvas.clientWidth, this.canvas.clientHeight);
     this.renderer.setPixelRatio(window.devicePixelRatio);
 
-    // Iluminação mais forte
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+    // Iluminação melhorada para destacar o AGV
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
     this.scene.add(ambientLight);
 
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.6);
-    directionalLight.position.set(0, 20, 0);
+    // Luz direcional de cima (simula luz do ambiente)
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+    directionalLight.position.set(5, 20, 5);
+    directionalLight.castShadow = true;
     this.scene.add(directionalLight);
+
+    // Luz frontal para iluminar bem o AGV
+    const frontLight = new THREE.DirectionalLight(0xffffff, 0.5);
+    frontLight.position.set(0, 5, 10);
+    this.scene.add(frontLight);
+
+    // Luz de preenchimento (fill light) para suavizar sombras
+    const fillLight = new THREE.DirectionalLight(0x8888ff, 0.3);
+    fillLight.position.set(-10, 5, -5);
+    this.scene.add(fillLight);
 
     // Listener para redimensionamento
     window.addEventListener('resize', () => this.onWindowResize(), false);
   }
 
   createScene() {
-    // ========== CRIAR AGV NO CENTRO ==========
-    // Corpo do AGV (caixa retangular)
-    const agvBodyGeometry = new THREE.BoxGeometry(1.5, 0.4, 1);
-    const agvBodyMaterial = new THREE.MeshPhongMaterial({
+    // ========== CRIAR AGV NO CENTRO (VERSÃO REALISTA - QUADRADO 30x30cm) ==========
+    // Criar um grupo para todo o AGV (facilita rotação e posicionamento)
+    this.agvBody = new THREE.Group();
+
+    // Corpo principal do AGV (quadrado 30x30cm = 3.0 x 3.0 unidades)
+    const bodyGeometry = new THREE.BoxGeometry(3.0, 0.8, 3.0);
+    const bodyMaterial = new THREE.MeshPhongMaterial({
       color: 0x36d1dc,
-      emissive: 0x36d1dc,
-      emissiveIntensity: 0.2
+      emissive: 0x1a6870,
+      emissiveIntensity: 0.3,
+      shininess: 60
     });
-    this.agvBody = new THREE.Mesh(agvBodyGeometry, agvBodyMaterial);
+    const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
+    body.position.y = 0.6;
+    this.agvBody.add(body);
+
+    // Parte superior do AGV (plataforma de carga - quadrada)
+    const topGeometry = new THREE.BoxGeometry(2.7, 0.3, 2.7);
+    const topMaterial = new THREE.MeshPhongMaterial({
+      color: 0x2a9d8f,
+      emissive: 0x1a6870,
+      emissiveIntensity: 0.2,
+      shininess: 80
+    });
+    const top = new THREE.Mesh(topGeometry, topMaterial);
+    top.position.y = 1.15;
+    this.agvBody.add(top);
+
+    // Frente identificável (painel frontal em amarelo)
+    const frontPanelGeometry = new THREE.BoxGeometry(3.1, 0.6, 0.1);
+    const frontPanelMaterial = new THREE.MeshPhongMaterial({
+      color: 0xffff00,
+      emissive: 0xffaa00,
+      emissiveIntensity: 0.4,
+      shininess: 100
+    });
+    const frontPanel = new THREE.Mesh(frontPanelGeometry, frontPanelMaterial);
+    frontPanel.position.set(0, 0.6, 1.55); // Ajustado para o tamanho quadrado
+    this.agvBody.add(frontPanel);
+
+    // Base/chassi do AGV (parte inferior escura - quadrada)
+    const chassisGeometry = new THREE.BoxGeometry(2.8, 0.2, 2.8);
+    const chassisMaterial = new THREE.MeshPhongMaterial({
+      color: 0x1a1a2e,
+      shininess: 30
+    });
+    const chassis = new THREE.Mesh(chassisGeometry, chassisMaterial);
+    chassis.position.y = 0.1;
+    this.agvBody.add(chassis);
+
+    // ========== CRIAR RODAS ==========
+    const wheelGeometry = new THREE.CylinderGeometry(0.35, 0.35, 0.3, 16);
+    const wheelMaterial = new THREE.MeshPhongMaterial({
+      color: 0x2d2d2d,
+      shininess: 20
+    });
+
+    // Posições das 4 rodas (ajustadas para o formato quadrado)
+    const wheelPositions = [
+      { x: 1.2, z: 1.2 },   // Frente direita
+      { x: -1.2, z: 1.2 },  // Frente esquerda
+      { x: 1.2, z: -1.2 },  // Traseira direita
+      { x: -1.2, z: -1.2 }  // Traseira esquerda
+    ];
+
+    this.wheels = [];
+    wheelPositions.forEach(pos => {
+      const wheel = new THREE.Mesh(wheelGeometry, wheelMaterial);
+      wheel.position.set(pos.x, 0.2, pos.z);
+      wheel.rotation.z = Math.PI / 2; // Rotacionar para orientação correta
+      this.agvBody.add(wheel);
+      this.wheels.push(wheel);
+    });
+
+    // Posicionar o grupo do AGV
     this.agvBody.position.y = 0.2;
     this.scene.add(this.agvBody);
 
-    // Seta indicando a FRENTE do AGV
-    const arrowLength = 1.2;
+    // Seta indicando a FRENTE do AGV (MAIOR e mais visível)
+    const arrowLength = 2.5;
     const arrowDir = new THREE.Vector3(0, 0, 1).normalize();
-    const arrowOrigin = new THREE.Vector3(0, 0.5, 0);
-    const arrowColor = 0xffff00;
-    this.frontArrow = new THREE.ArrowHelper(arrowDir, arrowOrigin, arrowLength, arrowColor, 0.4, 0.3);
+    const arrowOrigin = new THREE.Vector3(0, 1.8, 0);
+    const arrowColor = 0xff00ff; // Magenta para destacar
+    this.frontArrow = new THREE.ArrowHelper(arrowDir, arrowOrigin, arrowLength, arrowColor, 0.8, 0.6);
     this.scene.add(this.frontArrow);
 
     // ========== CRIAR CHÃO/GRID ==========
@@ -119,23 +197,23 @@ class Distance3DVisualization {
 
     // ========== CRIAR RAIOS/BEAMS DOS SENSORES ==========
 
-    // Raio do sensor FRONTAL/CENTRO (Vermelho)
-    const centerBeamGeometry = new THREE.CylinderGeometry(0.05, 0.05, 1, 8);
+    // Raio do sensor FRONTAL/CENTRO (Vermelho) - Mais grosso e visível
+    const centerBeamGeometry = new THREE.CylinderGeometry(0.15, 0.15, 1, 16);
     const centerBeamMaterial = new THREE.MeshBasicMaterial({
       color: 0xff4444,
       transparent: true,
-      opacity: 0.6
+      opacity: 0.7
     });
     this.centerBeam = new THREE.Mesh(centerBeamGeometry, centerBeamMaterial);
     this.centerBeam.rotation.x = Math.PI / 2;
     this.scene.add(this.centerBeam);
 
-    // Obstáculo detectado pelo sensor frontal
-    const centerObstacleGeometry = new THREE.BoxGeometry(0.8, 1, 0.3);
+    // Obstáculo detectado pelo sensor frontal (maior)
+    const centerObstacleGeometry = new THREE.BoxGeometry(1.5, 2, 0.5);
     const centerObstacleMaterial = new THREE.MeshPhongMaterial({
       color: 0xff4444,
       emissive: 0xff4444,
-      emissiveIntensity: 0.4,
+      emissiveIntensity: 0.5,
       transparent: true,
       opacity: 0.7
     });
@@ -143,23 +221,23 @@ class Distance3DVisualization {
     this.centerObstacle.position.y = 0.5;
     this.scene.add(this.centerObstacle);
 
-    // Raio do sensor DIREITA (Azul)
-    const rightBeamGeometry = new THREE.CylinderGeometry(0.05, 0.05, 1, 8);
+    // Raio do sensor DIREITA (Verde) - Mais grosso e visível
+    const rightBeamGeometry = new THREE.CylinderGeometry(0.15, 0.15, 1, 16);
     const rightBeamMaterial = new THREE.MeshBasicMaterial({
-      color: 0x4444ff,
+      color: 0x44ff44,
       transparent: true,
-      opacity: 0.6
+      opacity: 0.7
     });
     this.rightBeam = new THREE.Mesh(rightBeamGeometry, rightBeamMaterial);
     this.rightBeam.rotation.z = -Math.PI / 2;
     this.scene.add(this.rightBeam);
 
-    // Obstáculo detectado pelo sensor direito
-    const rightObstacleGeometry = new THREE.BoxGeometry(0.3, 1, 0.8);
+    // Obstáculo detectado pelo sensor direito (maior)
+    const rightObstacleGeometry = new THREE.BoxGeometry(0.5, 2, 1.5);
     const rightObstacleMaterial = new THREE.MeshPhongMaterial({
-      color: 0x4444ff,
-      emissive: 0x4444ff,
-      emissiveIntensity: 0.4,
+      color: 0x44ff44,
+      emissive: 0x44ff44,
+      emissiveIntensity: 0.5,
       transparent: true,
       opacity: 0.7
     });
@@ -167,23 +245,23 @@ class Distance3DVisualization {
     this.rightObstacle.position.y = 0.5;
     this.scene.add(this.rightObstacle);
 
-    // Raio do sensor ESQUERDA (Verde)
-    const leftBeamGeometry = new THREE.CylinderGeometry(0.05, 0.05, 1, 8);
+    // Raio do sensor ESQUERDA (Azul) - Mais grosso e visível
+    const leftBeamGeometry = new THREE.CylinderGeometry(0.15, 0.15, 1, 16);
     const leftBeamMaterial = new THREE.MeshBasicMaterial({
-      color: 0x44ff44,
+      color: 0x4444ff,
       transparent: true,
-      opacity: 0.6
+      opacity: 0.7
     });
     this.leftBeam = new THREE.Mesh(leftBeamGeometry, leftBeamMaterial);
     this.leftBeam.rotation.z = Math.PI / 2;
     this.scene.add(this.leftBeam);
 
-    // Obstáculo detectado pelo sensor esquerdo
-    const leftObstacleGeometry = new THREE.BoxGeometry(0.3, 1, 0.8);
+    // Obstáculo detectado pelo sensor esquerdo (maior)
+    const leftObstacleGeometry = new THREE.BoxGeometry(0.5, 2, 1.5);
     const leftObstacleMaterial = new THREE.MeshPhongMaterial({
-      color: 0x44ff44,
-      emissive: 0x44ff44,
-      emissiveIntensity: 0.4,
+      color: 0x4444ff,
+      emissive: 0x4444ff,
+      emissiveIntensity: 0.5,
       transparent: true,
       opacity: 0.7
     });
@@ -265,6 +343,10 @@ class Distance3DVisualization {
     // Obter rotação atual do AGV (yaw - rotação horizontal)
     const yaw = this.agvAnimation.rotation.y || 0;
 
+    // Dimensões do AGV (para começar sensores nas bordas) - QUADRADO 30x30cm
+    const agvWidth = 3.0;   // Largura do AGV (30cm)
+    const agvLength = 3.0;  // Comprimento do AGV (30cm)
+
     // ========== MOSTRAR/OCULTAR ALERTA DE PERIGO ==========
     if (this.dangerSprite) {
       this.dangerSprite.visible = hasDanger;
@@ -277,27 +359,32 @@ class Distance3DVisualization {
     }
 
     // ========== ATUALIZAR SENSOR FRONTAL (CENTRO) ==========
-    // Posição local do sensor (no sistema de coordenadas do AGV)
+    // Offset para começar na frente do AGV
+    const frontOffset = agvLength / 2; // 1.25
+
+    // Posição local do sensor (começa na frente do AGV)
     const centerLocalX = 0;
-    const centerLocalZ = centerDist / 2;
+    const centerLocalZ = frontOffset + centerDist / 2; // Começa na borda + metade da distância
 
     // Converter para coordenadas globais considerando rotação
     const centerWorldX = centerLocalX * Math.cos(yaw) - centerLocalZ * Math.sin(yaw);
     const centerWorldZ = centerLocalX * Math.sin(yaw) + centerLocalZ * Math.cos(yaw);
 
-    // Posicionar raio/beam (relativo ao AGV FIXO no centro)
+    // Posicionar raio/beam
     this.centerBeam.position.set(
       centerWorldX,
-      0.2,
+      0.6,  // Altura ajustada para ficar no nível do corpo do AGV
       centerWorldZ
     );
     this.centerBeam.scale.set(1, centerDist, 1);
-    this.centerBeam.rotation.set(Math.PI / 2, 0, 0); // Rotação base
-    this.centerBeam.rotation.y = yaw; // Aplica rotação do AGV
+    this.centerBeam.rotation.set(Math.PI / 2, 0, 0);
+    this.centerBeam.rotation.y = yaw;
 
-    // Posicionar obstáculo
-    const obstacleWorldX = 0 * Math.cos(yaw) - centerDist * Math.sin(yaw);
-    const obstacleWorldZ = 0 * Math.sin(yaw) + centerDist * Math.cos(yaw);
+    // Posicionar obstáculo (distância completa a partir da frente do AGV)
+    const obstacleLocalX = 0;
+    const obstacleLocalZ = frontOffset + centerDist;
+    const obstacleWorldX = obstacleLocalX * Math.cos(yaw) - obstacleLocalZ * Math.sin(yaw);
+    const obstacleWorldZ = obstacleLocalX * Math.sin(yaw) + obstacleLocalZ * Math.cos(yaw);
     this.centerObstacle.position.set(
       obstacleWorldX,
       0.5,
@@ -309,8 +396,11 @@ class Distance3DVisualization {
     this.centerBeam.visible = centerDist > 0.1;
 
     // ========== ATUALIZAR SENSOR DIREITA ==========
-    // Posição local do sensor
-    const rightLocalX = rightDist / 2;
+    // Offset para começar na lateral direita do AGV
+    const rightOffset = agvWidth / 2; // 1.75
+
+    // Posição local do sensor (começa na lateral direita)
+    const rightLocalX = rightOffset + rightDist / 2;
     const rightLocalZ = 0;
 
     // Converter para coordenadas globais
@@ -320,16 +410,18 @@ class Distance3DVisualization {
     // Posicionar raio/beam
     this.rightBeam.position.set(
       rightWorldX,
-      0.2,
+      0.6,
       rightWorldZ
     );
     this.rightBeam.scale.set(1, rightDist, 1);
-    this.rightBeam.rotation.set(0, 0, -Math.PI / 2); // Rotação base
-    this.rightBeam.rotation.y = yaw; // Aplica rotação do AGV
+    this.rightBeam.rotation.set(0, 0, -Math.PI / 2);
+    this.rightBeam.rotation.y = yaw;
 
     // Posicionar obstáculo
-    const rightObstacleWorldX = rightDist * Math.cos(yaw);
-    const rightObstacleWorldZ = rightDist * Math.sin(yaw);
+    const rightObstacleLocalX = rightOffset + rightDist;
+    const rightObstacleLocalZ = 0;
+    const rightObstacleWorldX = rightObstacleLocalX * Math.cos(yaw) - rightObstacleLocalZ * Math.sin(yaw);
+    const rightObstacleWorldZ = rightObstacleLocalX * Math.sin(yaw) + rightObstacleLocalZ * Math.cos(yaw);
     this.rightObstacle.position.set(
       rightObstacleWorldX,
       0.5,
@@ -341,8 +433,11 @@ class Distance3DVisualization {
     this.rightBeam.visible = rightDist > 0.1;
 
     // ========== ATUALIZAR SENSOR ESQUERDA ==========
-    // Posição local do sensor
-    const leftLocalX = -leftDist / 2;
+    // Offset para começar na lateral esquerda do AGV
+    const leftOffset = agvWidth / 2; // 1.75
+
+    // Posição local do sensor (começa na lateral esquerda)
+    const leftLocalX = -(leftOffset + leftDist / 2);
     const leftLocalZ = 0;
 
     // Converter para coordenadas globais
@@ -352,16 +447,18 @@ class Distance3DVisualization {
     // Posicionar raio/beam
     this.leftBeam.position.set(
       leftWorldX,
-      0.2,
+      0.6,
       leftWorldZ
     );
     this.leftBeam.scale.set(1, leftDist, 1);
-    this.leftBeam.rotation.set(0, 0, Math.PI / 2); // Rotação base
-    this.leftBeam.rotation.y = yaw; // Aplica rotação do AGV
+    this.leftBeam.rotation.set(0, 0, Math.PI / 2);
+    this.leftBeam.rotation.y = yaw;
 
     // Posicionar obstáculo
-    const leftObstacleWorldX = -leftDist * Math.cos(yaw);
-    const leftObstacleWorldZ = -leftDist * Math.sin(yaw);
+    const leftObstacleLocalX = -(leftOffset + leftDist);
+    const leftObstacleLocalZ = 0;
+    const leftObstacleWorldX = leftObstacleLocalX * Math.cos(yaw) - leftObstacleLocalZ * Math.sin(yaw);
+    const leftObstacleWorldZ = leftObstacleLocalX * Math.sin(yaw) + leftObstacleLocalZ * Math.cos(yaw);
     this.leftObstacle.position.set(
       leftObstacleWorldX,
       0.5,
@@ -372,7 +469,7 @@ class Distance3DVisualization {
     this.leftObstacle.visible = leftDist > 0.5 && leftDist < 10;
     this.leftBeam.visible = leftDist > 0.1;
 
-    console.log(`[3D VIZ] 📊 Dados atualizados - Centro: ${center} cm | Direita: ${right} cm | Esquerda: ${left} cm`);
+    console.log(`[3D VIZ] 📊 Dados atualizados - Centro: ${center} cm | Esquerda: ${right} cm | Direita: ${left} cm`);
   }
 
   updateIMUData(accel, gyro) {
