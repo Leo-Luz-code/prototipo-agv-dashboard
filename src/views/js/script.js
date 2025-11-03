@@ -183,6 +183,23 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
+  // Ouve pelo evento 'agv/imu' para atualizar física do AGV na visualização 3D
+  socket.on("agv/imu", (data) => {
+    console.log("[Socket.IO] 🎯 Dados IMU recebidos para visualização 3D:", data);
+
+    // Atualiza visualização 3D com dados do IMU (acelerômetro e giroscópio)
+    if (
+      distance3D &&
+      typeof distance3D.updateIMUData === "function" &&
+      data &&
+      data.accel &&
+      data.gyro
+    ) {
+      distance3D.updateIMUData(data.accel, data.gyro);
+      console.log("[Socket.IO] ✅ Visualização 3D atualizada com dados IMU");
+    }
+  });
+
   console.log("[Socket.IO] 📝 Event listeners registrados!");
 
   // Mapeamento de Posições (coordenadas em % [x, y])

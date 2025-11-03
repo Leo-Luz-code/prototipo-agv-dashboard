@@ -18,9 +18,33 @@ class Distance3DVisualization {
       left: 0      // Sensor esquerdo (eixo Z - azul)
     };
 
+    // Dados do IMU (acelerômetro e giroscópio)
+    this.imuData = {
+      accel: { x: 0, y: 0, z: 0 },  // Aceleração em g
+      gyro: { x: 0, y: 0, z: 0 }    // Rotação em graus/s
+    };
+
+    // Estado da animação do AGV
+    this.agvAnimation = {
+      vibration: { x: 0, y: 0, z: 0 },  // Vibração atual
+      rotation: { x: 0, y: 0, z: 0 },   // Rotação atual (pitch, yaw, roll)
+      targetVibration: { x: 0, y: 0, z: 0 },  // Vibração alvo
+      targetRotation: { x: 0, y: 0, z: 0 },   // Rotação alvo (pitch, yaw, roll)
+      basePosition: { x: 0, y: 0.2, z: 0 },   // Posição FIXA do AGV
+      baseRotation: { x: 0, y: 0, z: 0 }      // Rotação base
+    };
+
     // Escala: 1 unidade = 10 cm (para visualização mais compacta)
     this.scale = 0.1;
     this.maxDistance = 100; // 100 cm = 10 unidades no gráfico
+
+    // Sensibilidade dos efeitos IMU
+    this.imuSensitivity = {
+      vibration: 0.01,      // Sensibilidade da vibração (mais baixo = menos vibração)
+      rotationAccel: 1.2,   // Sensibilidade da rotação por acelerômetro (orientação)
+      rotationGyro: 1.5,    // Sensibilidade da rotação por giroscópio (movimento)
+      smoothing: 0.1        // Suavização da animação (0-1, mais alto = mais rápido)
+    };
 
     this.init();
     this.createScene();
@@ -238,6 +262,9 @@ class Distance3DVisualization {
     const rightDist = Math.min(this.sensorData.right * this.scale, this.maxDistance * this.scale);
     const leftDist = Math.min(this.sensorData.left * this.scale, this.maxDistance * this.scale);
 
+    // Obter rotação atual do AGV (yaw - rotação horizontal)
+    const yaw = this.agvAnimation.rotation.y || 0;
+
     // ========== MOSTRAR/OCULTAR ALERTA DE PERIGO ==========
     if (this.dangerSprite) {
       this.dangerSprite.visible = hasDanger;
@@ -250,36 +277,96 @@ class Distance3DVisualization {
     }
 
     // ========== ATUALIZAR SENSOR FRONTAL (CENTRO) ==========
-    // Posicionar raio/beam
-    this.centerBeam.position.set(0, 0.2, centerDist / 2);
+    // Posição local do sensor (no sistema de coordenadas do AGV)
+    const centerLocalX = 0;
+    const centerLocalZ = centerDist / 2;
+
+    // Converter para coordenadas globais considerando rotação
+    const centerWorldX = centerLocalX * Math.cos(yaw) - centerLocalZ * Math.sin(yaw);
+    const centerWorldZ = centerLocalX * Math.sin(yaw) + centerLocalZ * Math.cos(yaw);
+
+    // Posicionar raio/beam (relativo ao AGV FIXO no centro)
+    this.centerBeam.position.set(
+      centerWorldX,
+      0.2,
+      centerWorldZ
+    );
     this.centerBeam.scale.set(1, centerDist, 1);
+    this.centerBeam.rotation.set(Math.PI / 2, 0, 0); // Rotação base
+    this.centerBeam.rotation.y = yaw; // Aplica rotação do AGV
 
     // Posicionar obstáculo
-    this.centerObstacle.position.set(0, 0.5, centerDist);
+    const obstacleWorldX = 0 * Math.cos(yaw) - centerDist * Math.sin(yaw);
+    const obstacleWorldZ = 0 * Math.sin(yaw) + centerDist * Math.cos(yaw);
+    this.centerObstacle.position.set(
+      obstacleWorldX,
+      0.5,
+      obstacleWorldZ
+    );
 
     // Tornar invisível se distância muito grande ou zero
     this.centerObstacle.visible = centerDist > 0.5 && centerDist < 10;
     this.centerBeam.visible = centerDist > 0.1;
 
     // ========== ATUALIZAR SENSOR DIREITA ==========
+    // Posição local do sensor
+    const rightLocalX = rightDist / 2;
+    const rightLocalZ = 0;
+
+    // Converter para coordenadas globais
+    const rightWorldX = rightLocalX * Math.cos(yaw) - rightLocalZ * Math.sin(yaw);
+    const rightWorldZ = rightLocalX * Math.sin(yaw) + rightLocalZ * Math.cos(yaw);
+
     // Posicionar raio/beam
-    this.rightBeam.position.set(rightDist / 2, 0.2, 0);
+    this.rightBeam.position.set(
+      rightWorldX,
+      0.2,
+      rightWorldZ
+    );
     this.rightBeam.scale.set(1, rightDist, 1);
+    this.rightBeam.rotation.set(0, 0, -Math.PI / 2); // Rotação base
+    this.rightBeam.rotation.y = yaw; // Aplica rotação do AGV
 
     // Posicionar obstáculo
-    this.rightObstacle.position.set(rightDist, 0.5, 0);
+    const rightObstacleWorldX = rightDist * Math.cos(yaw);
+    const rightObstacleWorldZ = rightDist * Math.sin(yaw);
+    this.rightObstacle.position.set(
+      rightObstacleWorldX,
+      0.5,
+      rightObstacleWorldZ
+    );
 
     // Tornar invisível se distância muito grande ou zero
     this.rightObstacle.visible = rightDist > 0.5 && rightDist < 10;
     this.rightBeam.visible = rightDist > 0.1;
 
     // ========== ATUALIZAR SENSOR ESQUERDA ==========
+    // Posição local do sensor
+    const leftLocalX = -leftDist / 2;
+    const leftLocalZ = 0;
+
+    // Converter para coordenadas globais
+    const leftWorldX = leftLocalX * Math.cos(yaw) - leftLocalZ * Math.sin(yaw);
+    const leftWorldZ = leftLocalX * Math.sin(yaw) + leftLocalZ * Math.cos(yaw);
+
     // Posicionar raio/beam
-    this.leftBeam.position.set(-leftDist / 2, 0.2, 0);
+    this.leftBeam.position.set(
+      leftWorldX,
+      0.2,
+      leftWorldZ
+    );
     this.leftBeam.scale.set(1, leftDist, 1);
+    this.leftBeam.rotation.set(0, 0, Math.PI / 2); // Rotação base
+    this.leftBeam.rotation.y = yaw; // Aplica rotação do AGV
 
     // Posicionar obstáculo
-    this.leftObstacle.position.set(-leftDist, 0.5, 0);
+    const leftObstacleWorldX = -leftDist * Math.cos(yaw);
+    const leftObstacleWorldZ = -leftDist * Math.sin(yaw);
+    this.leftObstacle.position.set(
+      leftObstacleWorldX,
+      0.5,
+      leftObstacleWorldZ
+    );
 
     // Tornar invisível se distância muito grande ou zero
     this.leftObstacle.visible = leftDist > 0.5 && leftDist < 10;
@@ -288,8 +375,89 @@ class Distance3DVisualization {
     console.log(`[3D VIZ] 📊 Dados atualizados - Centro: ${center} cm | Direita: ${right} cm | Esquerda: ${left} cm`);
   }
 
+  updateIMUData(accel, gyro) {
+    // Atualizar dados do IMU
+    if (accel) {
+      this.imuData.accel.x = accel.x || 0;
+      this.imuData.accel.y = accel.y || 0;
+      this.imuData.accel.z = accel.z || 0;
+    }
+
+    if (gyro) {
+      this.imuData.gyro.x = gyro.x || 0;
+      this.imuData.gyro.y = gyro.y || 0;
+      this.imuData.gyro.z = gyro.z || 0;
+    }
+
+    // ========== ROTAÇÃO DO CARRINHO BASEADA NA ORIENTAÇÃO DO ACELERÔMETRO ==========
+    // O acelerômetro detecta a gravidade em g (0-1), ou em m/s² (0-10)
+    // Z ≈ 1g (ou ~10 m/s²) significa que o acelerômetro está em pé/vertical
+
+    // PITCH (rotação X): Inclinação frente/trás
+    // Quando Z = 1 (em pé), Y = 0 → pitch = 0 (carrinho normal)
+    // Quando Y = 1 (deitado para frente), Z = 0 → pitch = 90° (carrinho inclinado)
+    const pitch = Math.atan2(-this.imuData.accel.y, this.imuData.accel.z) * this.imuSensitivity.rotationAccel;
+
+    // ROLL (rotação Z): Inclinação lateral (esquerda/direita)
+    // Quando X = 0, Z = 1 → roll = 0 (carrinho normal)
+    // Quando X = 1 (inclinado para direita), Z = 0 → roll = 90°
+    const roll = Math.atan2(this.imuData.accel.x, this.imuData.accel.z) * this.imuSensitivity.rotationAccel;
+
+    // YAW (rotação Y): Rotação horizontal (curvas)
+    // Integrar giroscópio Z para acumular rotação horizontal
+    const gyroZtoRad = (this.imuData.gyro.z * Math.PI / 180) * this.imuSensitivity.rotationGyro * 0.016; // ~60fps
+
+    // Atualizar rotações alvo
+    this.agvAnimation.targetRotation.x = pitch;
+    this.agvAnimation.targetRotation.y = (this.agvAnimation.rotation.y || 0) + gyroZtoRad; // Acumular yaw
+    this.agvAnimation.targetRotation.z = roll;
+
+    // ========== PEQUENA VIBRAÇÃO ==========
+    // Vibração sutil baseada na aceleração (movimento rápido)
+    this.agvAnimation.targetVibration.x = this.imuData.accel.x * this.imuSensitivity.vibration;
+    this.agvAnimation.targetVibration.y = Math.abs(this.imuData.accel.y - 1) * this.imuSensitivity.vibration; // -1 pois gravidade é ~1g
+    this.agvAnimation.targetVibration.z = this.imuData.accel.z * this.imuSensitivity.vibration;
+
+    console.log(`[3D VIZ] 🎯 IMU atualizado - Accel: (${accel.x.toFixed(2)}, ${accel.y.toFixed(2)}, ${accel.z.toFixed(2)}) | Gyro: (${gyro.x.toFixed(2)}, ${gyro.y.toFixed(2)}, ${gyro.z.toFixed(2)}) | Pitch: ${(pitch * 180 / Math.PI).toFixed(1)}° Roll: ${(roll * 180 / Math.PI).toFixed(1)}°`);
+  }
+
+  applyAGVPhysics() {
+    // Suavizar animação usando interpolação linear (lerp)
+    const smoothing = this.imuSensitivity.smoothing;
+
+    // ========== INTERPOLAR VIBRAÇÃO (SUTIL) ==========
+    this.agvAnimation.vibration.x += (this.agvAnimation.targetVibration.x - this.agvAnimation.vibration.x) * smoothing;
+    this.agvAnimation.vibration.y += (this.agvAnimation.targetVibration.y - this.agvAnimation.vibration.y) * smoothing;
+    this.agvAnimation.vibration.z += (this.agvAnimation.targetVibration.z - this.agvAnimation.vibration.z) * smoothing;
+
+    // ========== INTERPOLAR ROTAÇÕES (PITCH, YAW, ROLL) ==========
+    this.agvAnimation.rotation.x += (this.agvAnimation.targetRotation.x - this.agvAnimation.rotation.x) * smoothing;
+    this.agvAnimation.rotation.y += (this.agvAnimation.targetRotation.y - this.agvAnimation.rotation.y) * smoothing;
+    this.agvAnimation.rotation.z += (this.agvAnimation.targetRotation.z - this.agvAnimation.rotation.z) * smoothing;
+
+    // ========== APLICAR POSIÇÃO FIXA + VIBRAÇÃO SUTIL ==========
+    // A posição base é SEMPRE (0, 0.2, 0) - o carrinho NÃO se move
+    this.agvBody.position.x = this.agvAnimation.basePosition.x + this.agvAnimation.vibration.x;
+    this.agvBody.position.y = this.agvAnimation.basePosition.y + this.agvAnimation.vibration.y;
+    this.agvBody.position.z = this.agvAnimation.basePosition.z + this.agvAnimation.vibration.z;
+
+    // ========== APLICAR ROTAÇÃO FINAL ==========
+    // A rotação reflete a orientação do acelerômetro
+    this.agvBody.rotation.x = this.agvAnimation.baseRotation.x + this.agvAnimation.rotation.x; // PITCH
+    this.agvBody.rotation.y = this.agvAnimation.baseRotation.y + this.agvAnimation.rotation.y; // YAW
+    this.agvBody.rotation.z = this.agvAnimation.baseRotation.z + this.agvAnimation.rotation.z; // ROLL
+
+    // ========== ATUALIZAR SETA FRONTAL ==========
+    // A seta frontal acompanha o carrinho
+    this.frontArrow.position.copy(this.agvBody.position);
+    this.frontArrow.rotation.copy(this.agvBody.rotation);
+  }
+
   animate() {
     requestAnimationFrame(() => this.animate());
+
+    // Aplicar física/animação do AGV baseada no IMU
+    this.applyAGVPhysics();
 
     // Renderizar cena (sem rotação - câmera fixa)
     this.renderer.render(this.scene, this.camera);
