@@ -396,7 +396,7 @@ class Distance3DVisualization {
     // PITCH (rotação X): Inclinação frente/trás
     // Quando Z = 1 (em pé), Y = 0 → pitch = 0 (carrinho normal)
     // Quando Y = 1 (deitado para frente), Z = 0 → pitch = 90° (carrinho inclinado)
-    const pitch = Math.atan2(-this.imuData.accel.y, this.imuData.accel.z) * this.imuSensitivity.rotationAccel;
+    const pitch = Math.atan2(this.imuData.accel.y, this.imuData.accel.z) * this.imuSensitivity.rotationAccel;
 
     // ROLL (rotação Z): Inclinação lateral (esquerda/direita)
     // Quando X = 0, Z = 1 → roll = 0 (carrinho normal)
