@@ -41,6 +41,25 @@ class DistanceSensor {
 
     // Ouve pelo evento 'agv/distance' para atualizar sensores de distância
     socket.on("agv/distance", (data) => this.handleDistanceData(data));
+
+    // Ouve pelo evento 'agv/imu' para atualizar física do AGV na visualização 3D
+    socket.on("agv/imu", (data) => this.handleIMUData(data));
+  }
+
+  handleIMUData(data) {
+    console.log("[Socket.IO] 🎯 Dados IMU recebidos para visualização 3D:", data);
+
+    // Atualiza visualização 3D com dados do IMU (acelerômetro e giroscópio)
+    if (
+      this.distance3D &&
+      typeof this.distance3D.updateIMUData === "function" &&
+      data &&
+      data.accel &&
+      data.gyro
+    ) {
+      this.distance3D.updateIMUData(data.accel, data.gyro);
+      console.log("[Socket.IO] ✅ Visualização 3D atualizada com dados IMU");
+    }
   }
 
   handleDistanceData(data) {
@@ -61,7 +80,7 @@ class DistanceSensor {
         esquerda,
         unidade,
         DISTANCIA_PERIGO,
-        "Esquerda"
+        "Direita"
       );
       this.updateSensorDisplay(
         this.centerElement,
@@ -75,7 +94,7 @@ class DistanceSensor {
         direita,
         unidade,
         DISTANCIA_PERIGO,
-        "Direita"
+        "Esquerda"
       );
 
       // Verifica se há perigo em qualquer sensor
@@ -91,8 +110,8 @@ class DistanceSensor {
       ) {
         this.distance3D.updateSensorData(
           parseFloat(centro) || 0,
-          parseFloat(direita) || 0,   // right sensor data (azul - direita)
-          parseFloat(esquerda) || 0,  // left sensor data (verde - esquerda)
+          parseFloat(esquerda) || 0,  // Invertido: dados da esquerda vão para right
+          parseFloat(direita) || 0,   // Invertido: dados da direita vão para left
           temPerigo
         );
       }

@@ -164,8 +164,8 @@ document.addEventListener("DOMContentLoaded", () => {
       if (distance3D && typeof distance3D.updateSensorData === "function") {
         distance3D.updateSensorData(
           parseFloat(centro) || 0,
-          parseFloat(direita) || 0,
-          parseFloat(esquerda) || 0,
+          parseFloat(esquerda) || 0,  // Invertido: dados da esquerda vão para right
+          parseFloat(direita) || 0,   // Invertido: dados da direita vão para left
           temPerigo // Passa se tem perigo ou não
         );
       }
@@ -180,6 +180,23 @@ document.addEventListener("DOMContentLoaded", () => {
         "[Socket.IO] ⚠️ Dados de distância inválidos ou ausentes:",
         data
       );
+    }
+  });
+
+  // Ouve pelo evento 'agv/imu' para atualizar física do AGV na visualização 3D
+  socket.on("agv/imu", (data) => {
+    console.log("[Socket.IO] 🎯 Dados IMU recebidos para visualização 3D:", data);
+
+    // Atualiza visualização 3D com dados do IMU (acelerômetro e giroscópio)
+    if (
+      distance3D &&
+      typeof distance3D.updateIMUData === "function" &&
+      data &&
+      data.accel &&
+      data.gyro
+    ) {
+      distance3D.updateIMUData(data.accel, data.gyro);
+      console.log("[Socket.IO] ✅ Visualização 3D atualizada com dados IMU");
     }
   });
 
