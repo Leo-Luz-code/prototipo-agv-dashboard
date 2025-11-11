@@ -26,6 +26,11 @@ class SensorsManager {
       this.activeSensors.imu = new IMUSensor();
     }
 
+    // Inicializa o sensor de cor se o card estiver presente
+    if (document.getElementById("color-card")) {
+      this.activeSensors.color = new ColorSensor();
+    }
+
     // Aqui você pode adicionar a inicialização de outros sensores
     // seguindo o mesmo padrão, por exemplo:
     //

@@ -1138,3 +1138,56 @@ h2 {
     font-size: 1.05rem;
   }
 }
+
+/* ========================================
+   Estilos Sensor de Cor GY-33
+   ======================================== */
+
+.color-sensor-container {
+  padding: var(--spacing-md);
+  text-align: center;
+}
+
+.color-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-md);
+  background: rgba(0, 255, 255, 0.05);
+  border: 1px solid var(--color-primary-glow);
+  border-radius: var(--border-radius-md);
+}
+
+.color-label {
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.color-value {
+  font-family: var(--font-mono);
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--color-primary);
+  text-shadow: 0 0 10px var(--color-primary-glow);
+  transition: all 0.3s ease;
+}
+
+.color-value.updating {
+  animation: valueUpdate 0.3s ease;
+}
+
+@keyframes valueUpdate {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}

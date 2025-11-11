@@ -15,12 +15,16 @@ const client = connect(`mqtt://${mqttOptions.host}:${mqttOptions.port}`);
 // REGISTRAR LISTENER IMEDIATAMENTE AQUI
 client.on("message", (topic, message) => {
   const raw = message.toString();
+  console.log(`\n========================================`);
   console.log(`[MQTT CONFIG] 📩 MENSAGEM RECEBIDA!`);
   console.log(`[MQTT CONFIG] Tópico: "${topic}"`);
   console.log(`[MQTT CONFIG] Payload: ${raw}`);
+  console.log(`========================================\n`);
 
   try {
     const data = JSON.parse(raw);
+    console.log(`[MQTT CONFIG] ✅ JSON parseado com sucesso`);
+    console.log(`[MQTT CONFIG] 🔍 Verificando handlers para tópico: "${topic}"`);
 
     // Handler para leituras RFID
     if (topic === "agv/rfid") {
@@ -127,8 +131,37 @@ client.on("message", (topic, message) => {
         );
       });
     }
+
+    // Handler para dados do sensor de cor GY-33
+    if (topic === "agv/color") {
+      console.log(`\n🎨🎨🎨 [MQTT CONFIG] HANDLER DE COR ATIVADO! 🎨🎨🎨`);
+      console.log(`[MQTT CONFIG] 🎨 COR RECEBIDA:`, data);
+      console.log(`[MQTT CONFIG]   Raw data:`, JSON.stringify(data));
+      console.log(`[MQTT CONFIG]   Color: ${data.color}`);
+      console.log(`[MQTT CONFIG]   Timestamp: ${data.timestamp}`);
+
+      // Envia dados de cor diretamente para o frontend
+      console.log(`[MQTT CONFIG] 📤 Enviando para Socket.IO...`);
+      import("../services/socketService.js").then(({ broadcast }) => {
+        console.log(`[MQTT CONFIG] 🔊 Chamando broadcast('agv/color', ...)...`);
+        broadcast("agv/color", data);
+        console.log(`[MQTT CONFIG] ✅ Dados de cor transmitidos via Socket.IO!`);
+      }).catch((err) => {
+        console.error(`[MQTT CONFIG] ❌ ERRO ao importar socketService:`, err);
+      });
+
+      console.log(`🎨🎨🎨 [MQTT CONFIG] HANDLER DE COR FINALIZADO! 🎨🎨🎨\n`);
+    }
+
+    // Log se nenhum handler foi executado
+    if (topic !== "agv/rfid" && topic !== "agv/status" && topic !== "agv/distance" && topic !== "agv/color" && topic !== "agv/imu") {
+      console.warn(`[MQTT CONFIG] ⚠️ TÓPICO NÃO RECONHECIDO: "${topic}"`);
+      console.warn(`[MQTT CONFIG] Handlers disponíveis: agv/rfid, agv/status, agv/distance, agv/color, agv/imu`);
+    }
   } catch (e) {
-    console.error("[MQTT CONFIG] ❌ Erro:", e);
+    console.error("[MQTT CONFIG] ❌ Erro ao processar mensagem:", e);
+    console.error("[MQTT CONFIG] Tópico:", topic);
+    console.error("[MQTT CONFIG] Raw:", raw);
   }
 });
 
@@ -137,7 +170,7 @@ client.on("connect", () => {
 
   // Subscrever aos tópicos
   client.subscribe(
-    ["agv/status", "agv/rfid", "agv/distance"],
+    ["agv/status", "agv/rfid", "agv/distance", "agv/color", "agv/imu"],
     { qos: 1 },
     (err, granted) => {
       if (err) {

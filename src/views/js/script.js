@@ -23,6 +23,15 @@ document.addEventListener("DOMContentLoaded", () => {
     console.warn("[APP] ⚠️ Distance3DVisualization não disponível");
   }
 
+  // Inicializar sensor de cor
+  let colorSensor = null;
+  if (typeof ColorSensor !== "undefined") {
+    colorSensor = new ColorSensor();
+    console.log("[APP] 🎨 Sensor de cor inicializado");
+  } else {
+    console.warn("[APP] ⚠️ ColorSensor não disponível");
+  }
+
   // Estado persistente da carga atual
   let currentCargoTag = null;
   let currentCargoName = null;

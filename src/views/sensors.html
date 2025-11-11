@@ -205,6 +205,17 @@
             </div>
           </div>
         </div>
+
+        <!-- CARD SENSOR DE COR GY-33 -->
+        <div id="color-card" class="info-card">
+          <h3>🎨 Sensor de Cor (GY-33)</h3>
+          <div class="color-sensor-container">
+            <div class="color-info">
+              <span class="color-label">Cor Detectada:</span>
+              <span id="color-display" class="color-value">---</span>
+            </div>
+          </div>
+        </div>
       </div>
     </main>
 
@@ -212,9 +223,41 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="js/distance3D.js"></script>
     <script src="js/drawer.js"></script>
+
+    <!-- DEBUG: Listener Global para Cor -->
+    <script>
+      console.log("[DEBUG SENSORS] 🧪 Iniciando debug do sensor de cor...");
+
+      // Cria listener global antes de qualquer módulo
+      const debugSocket = io();
+
+      debugSocket.on("connect", () => {
+        console.log("[DEBUG SENSORS] ✅ Socket.IO conectado!");
+      });
+
+      debugSocket.on("agv/color", (data) => {
+        console.log("[DEBUG SENSORS] 🎨🎨🎨 EVENTO agv/color RECEBIDO!");
+        console.log("[DEBUG SENSORS] Cor:", data.color);
+
+        const colorDisplay = document.getElementById("color-display");
+        if (colorDisplay && data && data.color) {
+          colorDisplay.textContent = data.color;
+          console.log("[DEBUG SENSORS] ✅ Texto atualizado:", data.color);
+        } else {
+          console.error("[DEBUG SENSORS] ❌ Elemento não encontrado ou dados inválidos!");
+        }
+      });
+
+      // Log de todos os eventos Socket.IO
+      debugSocket.onAny((eventName, ...args) => {
+        console.log(`[DEBUG SENSORS] 📡 Evento Socket.IO: ${eventName}`, args);
+      });
+    </script>
+
     <!-- Módulos de Sensores -->
     <script src="js/sensors/distance-sensor.js"></script>
     <script src="js/sensors/imu-sensor.js"></script>
+    <script src="js/sensors/color-sensor.js"></script>
     <!-- Adicione novos módulos de sensores aqui -->
 
     <!-- Gerenciador Principal -->
