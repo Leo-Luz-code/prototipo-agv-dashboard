@@ -62,12 +62,18 @@ broker.on("subscribe", (subscriptions, client) => {
 
 // PROCESSAR MENSAGENS DIRETO AQUI!
 broker.on("publish", async (packet, client) => {
-  if (client) {
-    const topic = packet.topic;
-    const payload = packet.payload.toString();
+  const topic = packet.topic;
+  const payload = packet.payload.toString();
 
-    console.log(`[BROKER MQTT] 📨 ${client.id} publicou em "${topic}"`);
-    console.log(`[BROKER MQTT] 📦 Payload: ${payload}`);
+  // LOG SUPER SIMPLES - MOSTRA TUDO QUE CHEGA
+  console.log("\n" + "=".repeat(80));
+  console.log(`📨 MENSAGEM RECEBIDA NO BROKER`);
+  console.log(`Cliente: ${client ? client.id : 'DESCONHECIDO'}`);
+  console.log(`Tópico: "${topic}"`);
+  console.log(`Payload: ${payload}`);
+  console.log("=".repeat(80) + "\n");
+
+  if (client) {
 
     // Processar mensagem RFID
     if (topic === "agv/rfid") {
@@ -198,6 +204,26 @@ broker.on("publish", async (packet, client) => {
         console.log('[BROKER MQTT] ✅ Dados IMU transmitidos!');
       } catch (e) {
         console.error('[BROKER MQTT] ❌ Erro ao processar IMU:', e);
+      }
+    }
+
+    // Processar dados do sensor de cor GY-33
+    if (topic === 'agv/color') {
+      try {
+        const data = JSON.parse(payload);
+        console.log(`\n🎨🎨🎨 [BROKER MQTT] COR RECEBIDA! 🎨🎨🎨`);
+        console.log(`[BROKER MQTT] Cor detectada: ${data.color}`);
+        console.log(`[BROKER MQTT] Timestamp: ${data.timestamp}`);
+        console.log(`[BROKER MQTT] Payload completo:`, JSON.stringify(data));
+
+        // Envia dados de cor diretamente para o frontend
+        const { broadcast } = await import('../services/socketService.js');
+        console.log(`[BROKER MQTT] 📤 Transmitindo para Socket.IO...`);
+        broadcast('agv/color', data);
+        console.log(`[BROKER MQTT] ✅ Cor "${data.color}" transmitida para dashboard!`);
+        console.log(`🎨🎨🎨 [BROKER MQTT] PROCESSAMENTO DE COR FINALIZADO! 🎨🎨🎨\n`);
+      } catch (e) {
+        console.error('[BROKER MQTT] ❌ Erro ao processar cor:', e);
       }
     }
   }

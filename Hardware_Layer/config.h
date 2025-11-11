@@ -18,6 +18,7 @@
 // ========== TÓPICOS MQTT ==========
 #define MQTT_TOPIC_RFID         "agv/rfid"
 #define MQTT_TOPIC_DISTANCE     "agv/distance"
+#define MQTT_TOPIC_COLOR        "agv/color"
 #define MQTT_TOPIC_STATUS       "agv/sensors/status"
 
 // ========== PINAGEM RFID (MFRC522) ==========
@@ -42,6 +43,7 @@
 #define SENSOR_CHANNEL_LEFT     0   // Esquerda
 #define SENSOR_CHANNEL_CENTER   1   // Centro
 #define SENSOR_CHANNEL_RIGHT    2   // Direita
+#define SENSOR_CHANNEL_COLOR    7   // Sensor de cor GY-33
 
 // ========== CONFIGURAÇÕES DE OPERAÇÃO ==========
 #define SCAN_INTERVAL_MS        100     // Intervalo entre leituras
@@ -56,5 +58,12 @@
 // ========== CONFIGURAÇÕES MPU6050 ==========
 #define MPU6050_ADDR        0x68    // Endereço I2C
 #define MQTT_TOPIC_IMU      "agv/imu"
+
+// ========== CONFIGURAÇÕES SENSOR DE COR GY-33 ==========
+// Nota: O sensor GY-33 usa o barramento I2C0 (GP20/GP21)
+// Conectado no canal 7 do multiplexador TCA9548A
+#define GY33_I2C_PORT       I2C_PORT        // i2c0 (compartilhado com sensores de distância)
+#define GY33_CHANNEL        SENSOR_CHANNEL_COLOR  // Canal 7 do TCA9548A
+#define GY33_ADDR           0x29            // Endereço I2C do TCS34725
 
 #endif // CONFIG_H

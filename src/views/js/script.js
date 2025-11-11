@@ -23,6 +23,48 @@ document.addEventListener("DOMContentLoaded", () => {
     console.warn("[APP] ⚠️ Distance3DVisualization não disponível");
   }
 
+  // Inicializar sensor de cor no dashboard
+  let colorSensor = null;
+  const colorDisplay = document.getElementById("color-display");
+
+  if (colorDisplay && typeof ColorSensor !== "undefined") {
+    colorSensor = new ColorSensor();
+    console.log("[APP] 🎨 Sensor de cor inicializado no dashboard");
+  } else if (colorDisplay) {
+    // Se o elemento existe mas a classe não, cria listener direto
+    const socket = io();
+    socket.on("agv/color", (data) => {
+      if (data && data.color) {
+        colorDisplay.textContent = data.color;
+
+        // Mapa de cores
+        const colorMap = {
+          "Vermelho": "#ff0000", "Verde": "#00ff00", "Azul": "#0000ff",
+          "Amarelo": "#ffff00", "Ciano": "#00ffff", "Magenta": "#ff00ff",
+          "Laranja": "#ff8000", "Rosa": "#ff69b4", "Roxo": "#8000ff",
+          "Branco": "#ffffff", "Preto": "#000000", "Cinza": "#808080",
+          "Lilás": "#c8a2c8", "Azul-escuro": "#00008b",
+          "Azul-acinzentado": "#708090", "Azul-acizentado": "#708090"
+        };
+
+        const textColor = colorMap[data.color] || "#00ffff";
+        colorDisplay.style.color = textColor;
+
+        // Sombra mais forte para cores claras
+        if (data.color === "Branco" || data.color === "Amarelo") {
+          colorDisplay.style.textShadow = `0 0 30px ${textColor}, 0 0 10px ${textColor}`;
+        } else {
+          colorDisplay.style.textShadow = `0 0 20px ${textColor}`;
+        }
+
+        console.log("[APP] ✅ Cor atualizada no dashboard:", data.color);
+      }
+    });
+    console.log("[APP] 🎨 Listener direto para cor criado no dashboard");
+  } else {
+    console.warn("[APP] ⚠️ ColorSensor não disponível");
+  }
+
   // Estado persistente da carga atual
   let currentCargoTag = null;
   let currentCargoName = null;
