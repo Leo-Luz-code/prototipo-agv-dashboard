@@ -50,6 +50,11 @@ set(IMU_SOURCES
     lib/mpu6050.c
 )
 
+# Biblioteca do sensor de cor GY-33
+set(COLOR_SOURCES
+    lib/gy33.c
+)
+
 # Arquivo principal
 set(MAIN_SOURCE
     main.c
@@ -62,6 +67,7 @@ add_executable(Hardware_Layer
     ${RFID_SOURCES}
     ${DISTANCE_SOURCES}
     ${IMU_SOURCES}
+    ${COLOR_SOURCES}
 )
 
 # ========== CONFIGURAÇÕES DO PROGRAMA ==========

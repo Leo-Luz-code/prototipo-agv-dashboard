@@ -26,6 +26,9 @@
 // Biblioteca do MPU6050
 #include "mpu6050.h"
 
+// Biblioteca do sensor de cor GY-33
+#include "gy33.h"
+
 // Configurações do projeto
 #include "config.h"
 
@@ -63,6 +66,13 @@ float distancia_direita = 0.0;
 
 // Dados do MPU6050
 mpu6050_data_t imu_data = {0};
+
+// Dados do sensor de cor GY-33
+uint16_t color_r = 0;
+uint16_t color_g = 0;
+uint16_t color_b = 0;
+uint16_t color_c = 0;
+const char* detected_color = "---";
 
 // Últimos valores publicados (para filtro de variação)
 float last_published_accel_x = 0.0;
@@ -111,6 +121,11 @@ bool should_publish_distance(void);
 
 // Operações IMU
 bool should_publish_imu(void);
+
+// Operações sensor de cor
+void init_color_sensor(void);
+void read_color_sensor(void);
+void publish_color_data(void);
 
 // Gerais
 void publish_status(const char *status);
@@ -492,7 +507,7 @@ void publish_status(const char *status) {
 
     char payload[128];
     snprintf(payload, sizeof(payload),
-             "{\"status\":\"%s\",\"rfid\":true,\"distance\":true,\"reader\":\"PicoW\"}",
+             "{\"status\":\"%s\",\"rfid\":true,\"distance\":true,\"color\":true,\"reader\":\"PicoW\"}",
              status);
 
     mqtt_publish(mqtt_client, MQTT_TOPIC_STATUS, payload, strlen(payload),
@@ -570,6 +585,68 @@ bool should_publish_imu(void) {
             variation_gyro_z > VARIATION_THRESHOLD);
 }
 
+// ========== IMPLEMENTAÇÃO - SENSOR DE COR ==========
+
+void init_color_sensor(void) {
+    printf("[COR] Inicializando sensor GY-33 no canal %d...\n", GY33_CHANNEL);
+
+    // Seleciona o canal 7 do multiplexador para o sensor de cor
+    tca9548a_select_channel(&mux, GY33_CHANNEL);
+    sleep_ms(50);
+
+    // Inicializa o sensor GY-33
+    gy33_init(GY33_I2C_PORT);
+
+    printf("[COR] Sensor GY-33 inicializado!\n");
+}
+
+void read_color_sensor(void) {
+    // Seleciona o canal do sensor de cor no multiplexador
+    if (!tca9548a_select_channel(&mux, GY33_CHANNEL)) {
+        return;
+    }
+
+    // Lê os valores de cor do sensor
+    gy33_read_color(GY33_I2C_PORT, &color_r, &color_g, &color_b, &color_c);
+
+    // Identifica a cor detectada
+    detected_color = identificar_cor(color_r, color_g, color_b, color_c);
+}
+
+void publish_color_data(void) {
+    if (!mqtt_connected) {
+        printf("[MQTT] Nao conectado, pulando publicacao de cor...\n");
+        return;
+    }
+
+    // Verifica se o cliente MQTT está pronto
+    if (mqtt_client == NULL || !mqtt_client_is_connected(mqtt_client)) {
+        printf("[MQTT] Cliente nao esta pronto, pulando publicacao...\n");
+        mqtt_connected = false;
+        return;
+    }
+
+    char payload[128];
+    uint32_t timestamp = to_ms_since_boot(get_absolute_time());
+
+    snprintf(payload, sizeof(payload),
+             "{\"color\":\"%s\",\"timestamp\":%lu}",
+             detected_color, timestamp);
+
+    printf("[COR] Cor detectada: %s\n", detected_color);
+    printf("[MQTT] Publicando cor: %s\n", payload);
+
+    err_t err = mqtt_publish(mqtt_client, MQTT_TOPIC_COLOR, payload, strlen(payload),
+                            1, 0, mqtt_pub_request_cb, NULL);
+
+    if (err != ERR_OK) {
+        printf("[MQTT] ERRO ao publicar cor! Codigo: %d\n", err);
+        if (err == ERR_CONN) {
+            mqtt_connected = false;
+        }
+    }
+}
+
 // ========== FUNÇÃO PRINCIPAL ==========
 
 int main() {
@@ -579,7 +656,7 @@ int main() {
     printf("\n");
     printf("========================================\n");
     printf("  Hardware Layer Unificado\n");
-    printf("  RFID + Sensores de Distancia\n");
+    printf("  RFID + Distancia + IMU + Cor\n");
     printf("  Dashboard Integration via MQTT\n");
     printf("========================================\n\n");
 
@@ -637,6 +714,10 @@ int main() {
     mpu6050_init(MPU_I2C_PORT);
     printf("[IMU] MPU6050 inicializado!\n");
 
+    // PASSO 6: Inicializar sensor de cor GY-33
+    printf("\n[COR] Configurando sensor de cor no I2C0...\n");
+    init_color_sensor();
+
     printf("\n========================================\n");
     printf("  Sistema pronto!\n");
     printf("========================================\n");
@@ -644,6 +725,7 @@ int main() {
     printf("  - RFID: %s\n", MQTT_TOPIC_RFID);
     printf("  - Distancia: %s\n", MQTT_TOPIC_DISTANCE);
     printf("  - IMU: %s\n", MQTT_TOPIC_IMU);
+    printf("  - Cor: %s\n", MQTT_TOPIC_COLOR);
     printf("  - Status: %s\n", MQTT_TOPIC_STATUS);
     printf("\nLendo sensores e publicando via MQTT...\n\n");
 
@@ -654,6 +736,7 @@ int main() {
     absolute_time_t last_status = get_absolute_time();
     absolute_time_t last_distance_publish = get_absolute_time();
     absolute_time_t last_imu_publish = get_absolute_time();
+    absolute_time_t last_color_publish = get_absolute_time();
 
     uint32_t loop_count = 0;
 
@@ -725,6 +808,15 @@ int main() {
                     mqtt_connected = false;
                 }
             }
+            cyw43_arch_poll();
+            sleep_ms(10);
+        }
+
+        // Lê e publica sensor de cor a cada 2 segundos
+        if (mqtt_connected && absolute_time_diff_us(last_color_publish, now) > 2000000) {
+            read_color_sensor();
+            publish_color_data();
+            last_color_publish = now;
             cyw43_arch_poll();
             sleep_ms(10);
         }
