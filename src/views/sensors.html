@@ -242,7 +242,39 @@
         const colorDisplay = document.getElementById("color-display");
         if (colorDisplay && data && data.color) {
           colorDisplay.textContent = data.color;
-          console.log("[DEBUG SENSORS] ✅ Texto atualizado:", data.color);
+
+          // Mapa de cores para aplicar no texto
+          const colorMap = {
+            "Vermelho": "#ff0000",
+            "Verde": "#00ff00",
+            "Azul": "#0000ff",
+            "Amarelo": "#ffff00",
+            "Ciano": "#00ffff",
+            "Magenta": "#ff00ff",
+            "Laranja": "#ff8000",
+            "Rosa": "#ff69b4",
+            "Roxo": "#8000ff",
+            "Branco": "#ffffff",
+            "Preto": "#000000",
+            "Cinza": "#808080",
+            "Lilás": "#c8a2c8",
+            "Azul-escuro": "#00008b",
+            "Azul-acinzentado": "#708090",
+            "Azul-acizentado": "#708090"
+          };
+
+          // Aplica a cor ao texto
+          const textColor = colorMap[data.color] || "#00ffff";
+          colorDisplay.style.color = textColor;
+
+          // Sombra mais forte para cores claras (branco, amarelo)
+          if (data.color === "Branco" || data.color === "Amarelo") {
+            colorDisplay.style.textShadow = `0 0 30px ${textColor}, 0 0 10px ${textColor}`;
+          } else {
+            colorDisplay.style.textShadow = `0 0 20px ${textColor}`;
+          }
+
+          console.log("[DEBUG SENSORS] ✅ Texto atualizado:", data.color, "com cor:", textColor);
         } else {
           console.error("[DEBUG SENSORS] ❌ Elemento não encontrado ou dados inválidos!");
         }

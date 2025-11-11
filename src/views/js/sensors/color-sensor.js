@@ -50,10 +50,22 @@ class ColorSensor {
     if (data && data.color) {
       const detectedColor = data.color;
 
-      // Atualiza apenas o texto da cor detectada
+      // Atualiza o texto e a cor da fonte
       if (this.colorDisplay) {
         this.colorDisplay.textContent = detectedColor;
-        console.log(`[Sensor Cor] ✅ Cor atualizada: ${detectedColor}`);
+
+        // Obtém a cor hexadecimal e aplica ao texto
+        const textColor = this.getColorValue(detectedColor);
+        this.colorDisplay.style.color = textColor;
+
+        // Sombra mais forte para cores claras
+        if (detectedColor === "Branco" || detectedColor === "Amarelo") {
+          this.colorDisplay.style.textShadow = `0 0 30px ${textColor}, 0 0 10px ${textColor}`;
+        } else {
+          this.colorDisplay.style.textShadow = `0 0 20px ${textColor}`;
+        }
+
+        console.log(`[Sensor Cor] ✅ Cor atualizada: ${detectedColor} (${textColor})`);
       } else {
         console.error("[Sensor Cor] ❌ Elemento color-display não encontrado!");
       }

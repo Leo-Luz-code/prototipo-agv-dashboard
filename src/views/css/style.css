@@ -1169,25 +1169,10 @@ h2 {
 
 .color-value {
   font-family: var(--font-mono);
-  font-size: 1.3rem;
+  font-size: 1.5rem;
   font-weight: 700;
   color: var(--color-primary);
-  text-shadow: 0 0 10px var(--color-primary-glow);
-  transition: all 0.3s ease;
-}
-
-.color-value.updating {
-  animation: valueUpdate 0.3s ease;
-}
-
-@keyframes valueUpdate {
-  0% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.1);
-  }
-  100% {
-    transform: scale(1);
-  }
+  text-shadow: 0 0 20px currentColor;
+  transition: all 0.5s ease;
+  letter-spacing: 2px;
 }

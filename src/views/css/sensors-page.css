@@ -438,8 +438,9 @@
   font-size: 2rem;
   font-weight: 700;
   color: var(--color-primary);
-  text-shadow: 0 0 10px var(--color-primary-glow);
-  transition: all 0.3s ease;
+  text-shadow: 0 0 20px currentColor;
+  transition: all 0.5s ease;
+  letter-spacing: 2px;
 }
 
 /* Responsividade */
